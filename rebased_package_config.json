@@ -1,0 +1,272 @@
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "_fe_analyzer_shared",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/_fe_analyzer_shared",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "_js_interop_checks",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/_js_interop_checks",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "args",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/args",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "async",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/async",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "async_helper",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/async_helper",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "bazel_worker",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/bazel_worker",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "build_integration",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/build_integration",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "charcode",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/charcode",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "cli_util",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/cli_util",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "collection",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/collection",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "compiler",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/compiler",
+      "packageUri": "lib/",
+      "languageVersion": "2.6"
+    },
+    {
+      "name": "convert",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/convert",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "crypto",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/crypto",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "dart2js_info",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/dart2js_info",
+      "packageUri": "lib/",
+      "languageVersion": "2.3"
+    },
+    {
+      "name": "dev_compiler",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/dev_compiler",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "expect",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/expect",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "fixnum",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/fixnum",
+      "packageUri": "lib/",
+      "languageVersion": "2.10"
+    },
+    {
+      "name": "front_end",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/front_end",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "frontend_server",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/frontend_server",
+      "packageUri": "lib/",
+      "languageVersion": "2.7"
+    },
+    {
+      "name": "http_parser",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/http_parser",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "js_ast",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/js_ast",
+      "packageUri": "lib/",
+      "languageVersion": "2.10"
+    },
+    {
+      "name": "js_runtime",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/js_runtime",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "kernel",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/kernel",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "logging",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/logging",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "matcher",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/matcher",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "meta",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/meta",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "mime",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/mime",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "package_config",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg_tested/package_config",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "path",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/path",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "pedantic",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/pedantic",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "protobuf",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/protobuf/protobuf",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "shelf",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/shelf",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "shelf_static",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/shelf_static",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "source_maps",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/source_maps",
+      "packageUri": "lib/",
+      "languageVersion": "2.10"
+    },
+    {
+      "name": "source_span",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/source_span",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "stack_trace",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/stack_trace",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "stream_channel",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/stream_channel",
+      "packageUri": "lib/",
+      "languageVersion": "2.10"
+    },
+    {
+      "name": "string_scanner",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/string_scanner",
+      "packageUri": "lib/",
+      "languageVersion": "2.10"
+    },
+    {
+      "name": "term_glyph",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/term_glyph",
+      "packageUri": "lib/",
+      "languageVersion": "2.10"
+    },
+    {
+      "name": "typed_data",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/typed_data",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "usage",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/usage",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "vm",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/pkg/vm",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "yaml",
+      "rootUri": "/Users/lixin/Documents/FlutterWorkspace/dart-sdk-stable/third_party/pkg/yaml",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "aspect_frontend_server",
+      "rootUri": ".",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    }
+  ],
+  "generated": "2021-11-03T06:24:49.107961Z",
+  "generator": "pub",
+  "generatorVersion": "2.14.4"
+}
