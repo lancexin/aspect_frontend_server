@@ -1,13 +1,21 @@
 name: aspect_frontend_server
-description: frontend server for flutter with aspect
+description: frontend server for flutter with AOP(aspect oriented programming)
 version: 0.0.1
-homepage:
+homepage: https://github.com/lancexin/aspect_frontend_server
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
 
+
+dependencies:
+  args: ^2.3.0
+
 dev_dependencies:
+  kernel: any
 
 dependency_overrides:
-
+  frontend_server: 
+    path: ../dart-sdk-stable/pkg/frontend_server
+  kernel: 
+    path: ../dart-sdk-stable/pkg/kernel
 

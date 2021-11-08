@@ -1,6 +1,6 @@
 # aspect_frontend_server
 
-编译frontend_server.dart.snapshot,让其具有aspect的功能
+编译frontend_server.dart.snapshot,让其具有aop的功能
 
 # 编译之前
 1. 下载最新的dart-sdk,下载地址:https://github.com/dart-lang/sdk
