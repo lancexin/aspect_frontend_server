@@ -37,7 +37,7 @@ flutter_macos_stable/bin/cache/artifacts/engine/android-arm64-release/darwin-x64
 cd example
 flutter run
 
-# 该方法和aspectd的区别
+### 该方法和aspectd的区别
 1. aspectd不支持flutter 2.5.4,本项目是基于flutter 2.5.4测试
 2. aspectd的编译需要对dart sdk中的vm进行修改,本项目不需要
 3. aspectd使用前需要对flutter tools的代码进行修改,本项目只需要替换flutter sdk对应的frontend_server.dart.snapshot即可
@@ -47,7 +47,7 @@ flutter run
 7. 可以有限制支持hot reload,完全支持hot restart,免去了冷重启的烦恼
 8. 为了性能优化inject方法限制必须是static的
 
-# 为什么用pragma注解,而不是自定义注解?
+### 为什么用pragma注解,而不是自定义注解?
 本项目是在aot优化后再对字节码进行修改,aot优化后只有白名单中的注解才能被识别到,pragma是在白名单中的注解.
 
 

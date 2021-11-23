@@ -9,13 +9,6 @@ environment:
 
 dependencies:
   args: ^2.3.0
-
-dev_dependencies:
+  frontend_server: any
   kernel: any
-
-dependency_overrides:
-  frontend_server: 
-    path: ../dart-sdk-stable/pkg/frontend_server
-  kernel: 
-    path: ../dart-sdk-stable/pkg/kernel
-
+  

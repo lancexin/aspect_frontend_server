@@ -32,6 +32,7 @@ class AspectAopTransformer implements frontend.ProgramTransformer {
   void transform(Component component) {
     print("[AspectAopTransformer] start transform");
     _aopItemList.clear();
+    AopUtils.manipulatedProcedureSet.clear();
     _collectAopItem(component);
 
     if (_aopItemList.isNotEmpty) {
@@ -63,8 +64,6 @@ class AspectAopTransformer implements frontend.ProgramTransformer {
           cls.members.forEach((member) {
             final AopItem? aopItem = AopUtils.processAopMember(member);
             if (aopItem != null) {
-              print(
-                  "[AspectAopTransformer] aopItemList add ${aopItem.toString()}");
               _aopItemList.add(aopItem);
             }
           });
@@ -157,8 +156,6 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
     if (matchedAopItem == null) {
       return;
     }
-    print(
-        "[AspectAopTransformer] visitProcedure matched ${matchedAopItem.toString()}");
 
     try {
       if (node.isStatic) {
@@ -168,16 +165,63 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
         } else if (node.parent is Class && node.parent?.parent is Library) {
           transformInstanceMethodProcedure(
               node.parent?.parent as Library, matchedAopItem, node);
+        } else {
+          print(
+              "[AspectAopTransformer] error ${node.parent.runtimeType.toString()} ${node.name.text}");
         }
       } else {
         if (node.parent != null) {
           transformInstanceMethodProcedure(
               node.parent?.parent as Library, matchedAopItem, node);
+        } else {
+          print(
+              "[AspectAopTransformer] error node.parent == null ${node.name.text}");
         }
       }
     } catch (error, stack) {
       print(
           "[AspectAopTransformer] ${error.toString()} \n ${stack.toString()}");
+    }
+  }
+
+  bool isInjectBlock(
+      Block? block, Procedure injectProcedure, Procedure originProcedure) {
+    if (block == null) {
+      return false;
+    }
+    if (block.statements.length != 1) {
+      return false;
+    }
+    Expression? expression;
+    if (block.statements.first is ReturnStatement) {
+      expression = (block.statements.first as ReturnStatement).expression;
+    } else if (block.statements.first is ExpressionStatement) {
+      expression = (block.statements.first as ExpressionStatement).expression;
+    } else {
+      return false;
+    }
+
+    if (expression is StaticInvocation) {
+      if (expression.arguments.positional.length != 5) {
+        print(
+            "[AspectAopTransformer] arguments is not 5 so return ${expression.arguments.positional.length}");
+        return false;
+      }
+      if (expression.arguments.positional[1] is StringLiteral &&
+          expression.arguments.positional[2] is ListLiteral &&
+          expression.arguments.positional[3] is MapLiteral &&
+          expression.arguments.positional[4] is FunctionExpression) {
+        if ((expression.arguments.positional[1] as StringLiteral).value ==
+            originProcedure.name.text) {
+          return true;
+        }
+        return false;
+      }
+      return false;
+    } else {
+      print(
+          "[AspectAopTransformer] expression is not StaticInvocation so return ");
+      return false;
     }
   }
 
@@ -187,15 +231,28 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
       //如果已经处理完过，就直接返回
       return;
     }
+    AopUtils.manipulatedProcedureSet.add(originalProcedure);
     //FunctionNode 中定义了方法的参数和、body、返回值类型等
     final FunctionNode functionNode = originalProcedure.function;
 
     //当前方法的处理逻辑
     Block? bodyStatements = functionNode.body as Block?;
     if (bodyStatements == null) {
+      print(
+          "[AspectAopTransformer] bodyStatements ${originalProcedure.name.toString()} is null so return");
       return;
     }
 
+    //检查当前方法是否已经被注入
+    if (isInjectBlock(
+        bodyStatements, aopItem.aopMember as Procedure, originalProcedure)) {
+      print(
+          "[AspectAopTransformer] isInjectBlock1 ${originalProcedure.name.toString()} so return");
+      return;
+    } else {
+      print(
+          "[AspectAopTransformer] isInjectBlock2 ${originalProcedure.name.toString()} continue");
+    }
     //是否需要返回
     final bool shouldReturn =
         !(originalProcedure.function.returnType is VoidType);

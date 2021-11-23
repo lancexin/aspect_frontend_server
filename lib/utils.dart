@@ -139,6 +139,27 @@ class AopUtils {
             }
           }
         }
+      } else if (annotation is ConstructorInvocation) {
+        final ConstructorInvocation constructorInvocation = annotation;
+        final Class? cls =
+            constructorInvocation.targetReference.node?.parent as Class?;
+        if (cls == null) {
+          continue;
+        }
+
+        final Library? library = cls.parent as Library?;
+        if (cls.name == AopUtils.kAopAnnotationClassAspect &&
+            library!.importUri.toString() == AopUtils.kImportUriAopAspect) {
+          if (constructorInvocation.arguments.positional[0] is StringLiteral &&
+              (constructorInvocation.arguments.positional[0] as StringLiteral)
+                      .value ==
+                  kImportUriAopAspectName) {
+            enabled = true;
+            break;
+          } else {
+            print("skip ${constructorInvocation.arguments.positional[0]}");
+          }
+        }
       }
     }
     return enabled;
@@ -201,6 +222,60 @@ class AopUtils {
               aopMember: member,
               isRegex: isRegex);
         }
+      } else if (annotation is ConstructorInvocation) {
+        final ConstructorInvocation constructorInvocation = annotation;
+        final Class? cls =
+            constructorInvocation.targetReference.node?.parent as Class?;
+        final Library? clsParentLib = cls?.parent as Library?;
+        bool aopMethod =
+            AopUtils.isPragma(cls!.name, clsParentLib?.importUri.toString());
+        if (!aopMethod) {
+          continue;
+        }
+        final StringLiteral stringName =
+            constructorInvocation.arguments.positional[0] as StringLiteral;
+        final String name = stringName.value;
+        if (name != kImportUriAopInjectName) {
+          aopMethod = false;
+          continue;
+        }
+
+        final MapLiteral invocation1 =
+            constructorInvocation.arguments.positional[1] as MapLiteral;
+
+        final StringLiteral stringLiteral0 =
+            invocation1.entries[0].value as StringLiteral;
+        final String importUri = stringLiteral0.value;
+        final StringLiteral stringLiteral1 =
+            invocation1.entries[1].value as StringLiteral;
+        final String clsName = stringLiteral1.value;
+        final StringLiteral stringLiteral2 =
+            invocation1.entries[2].value as StringLiteral;
+        String methodName = stringLiteral2.value;
+        bool isRegex = false;
+
+        final BoolLiteral boolLiteral =
+            invocation1.entries[3].value as BoolLiteral;
+        isRegex = boolLiteral.value;
+
+        bool isStatic = false;
+        if (methodName
+            .startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
+          methodName = methodName
+              .substring(AopUtils.kAopAnnotationInstanceMethodPrefix.length);
+        } else if (methodName
+            .startsWith(AopUtils.kAopAnnotationStaticMethodPrefix)) {
+          methodName = methodName
+              .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
+          isStatic = true;
+        }
+        return AopItem(
+            importUri: importUri,
+            clsName: clsName,
+            methodName: methodName,
+            isStatic: isStatic,
+            aopMember: member,
+            isRegex: isRegex);
       }
     }
   }
