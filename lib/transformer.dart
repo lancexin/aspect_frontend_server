@@ -1,4 +1,5 @@
 import 'package:frontend_server/frontend_server.dart' as frontend;
+import 'package:vm/target/flutter.dart';
 
 import 'package:kernel/ast.dart';
 import 'utils.dart';
@@ -25,7 +26,8 @@ class AopItem {
   }
 }
 
-class AspectAopTransformer implements frontend.ProgramTransformer {
+class AspectAopTransformer
+    implements frontend.ProgramTransformer, FlutterProgramTransformer {
   final List<AopItem> _aopItemList = <AopItem>[];
 
   @override
@@ -225,6 +227,49 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
     }
   }
 
+  Block? getInjectBlock(Block? block, Procedure originalProcedure) {
+    if (block == null) {
+      return block;
+    }
+    if (block.statements.length != 1) {
+      return block;
+    }
+    Expression? expression;
+    if (block.statements.first is ReturnStatement) {
+      expression = (block.statements.first as ReturnStatement).expression;
+    } else if (block.statements.first is ExpressionStatement) {
+      expression = (block.statements.first as ExpressionStatement).expression;
+    } else {
+      return block;
+    }
+
+    if (expression is StaticInvocation) {
+      if (expression.arguments.positional.length != 5) {
+        print(
+            "[AspectAopTransformer] arguments is not 5 so return ${expression.arguments.positional.length}");
+        return block;
+      }
+      if (expression.arguments.positional[1] is StringLiteral &&
+          expression.arguments.positional[2] is ListLiteral &&
+          expression.arguments.positional[3] is MapLiteral &&
+          expression.arguments.positional[4] is FunctionExpression) {
+        if ((expression.arguments.positional[1] as StringLiteral).value ==
+            originalProcedure.name.text) {
+          block = (expression.arguments.positional[4] as FunctionExpression)
+              .function
+              .body as Block?;
+          block = getInjectBlock(block, originalProcedure);
+        }
+        return block;
+      }
+      return block;
+    } else {
+      print(
+          "[AspectAopTransformer] expression is not StaticInvocation so return ");
+      return block;
+    }
+  }
+
   void transformInstanceMethodProcedure(
       Library? originalLibrary, AopItem aopItem, Procedure originalProcedure) {
     if (AopUtils.manipulatedProcedureSet.contains(originalProcedure)) {
@@ -242,16 +287,13 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
           "[AspectAopTransformer] bodyStatements ${originalProcedure.name.toString()} is null so return");
       return;
     }
-
+    //bodyStatements = getInjectBlock(bodyStatements, originalProcedure);
     //检查当前方法是否已经被注入
     if (isInjectBlock(
         bodyStatements, aopItem.aopMember as Procedure, originalProcedure)) {
       print(
           "[AspectAopTransformer] isInjectBlock1 ${originalProcedure.name.toString()} so return");
       return;
-    } else {
-      print(
-          "[AspectAopTransformer] isInjectBlock2 ${originalProcedure.name.toString()} continue");
     }
     //是否需要返回
     final bool shouldReturn =

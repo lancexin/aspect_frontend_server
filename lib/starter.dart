@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 
 import 'package:frontend_server/frontend_server.dart' as frontend;
+import 'package:vm/target/flutter.dart';
 import 'transformer.dart';
 
 Future<void> main(List<String> args) async {
