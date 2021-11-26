@@ -2,6 +2,11 @@
 
 编译frontend_server.dart.snapshot,让其具有aop的功能
 
+
+# 懒人做法,一步到位
+
+下载frontend_server.dart.snapshot并覆盖 flutter_macos_stable/bin/cache/artifacts/engine/darwin-x64/frontend_server.dart.snapshot
+
 # 编译之前
 1. 下载最新的dart-sdk,下载地址:https://github.com/dart-lang/sdk
 2. 将dart-sdk切换到 2.14.4: git checkout 2.14.4
