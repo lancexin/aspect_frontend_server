@@ -26,8 +26,7 @@ class AopItem {
   }
 }
 
-class AspectAopTransformer
-    implements frontend.ProgramTransformer, FlutterProgramTransformer {
+class AspectAopTransformer implements frontend.ProgramTransformer {
   final List<AopItem> _aopItemList = <AopItem>[];
 
   @override

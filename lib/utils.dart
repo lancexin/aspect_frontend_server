@@ -56,8 +56,11 @@ class AopUtils {
         flags: node.flags,
         isFinal: node.isFinal,
         isConst: node.isConst,
-        isFieldFormal: node.isFieldFormal,
-        isCovariant: node.isCovariant,
+        isLate: node.isLate,
+        isRequired: node.isRequired,
+        isInitializingFormal: node.isInitializingFormal,
+        isCovariantByDeclaration: node.isCovariantByDeclaration,
+        isLowered: node.isLowered,
       );
     }
     if (node is TypeParameterType) {
@@ -189,20 +192,24 @@ class AopUtils {
           if (annotationName != kImportUriAopInjectName) {
             continue;
           }
-          var list =
-              ((instanceConstant.fieldValues.values.last as InstanceConstant)
-                      .fieldValues
-                      .values
-                      .first as ListConstant)
-                  .entries;
-          if (list.length != 8) {
+          List<ConstantMapEntry> list =
+              (instanceConstant.fieldValues.values.last as MapConstant).entries;
+
+          if (list.length != 4) {
             continue;
           }
 
-          String importUri = (list[1] as StringConstant).value;
-          String clsName = (list[3] as StringConstant).value;
-          String methodName = (list[5] as StringConstant).value;
-          bool isRegex = (list[7] as BoolConstant).value;
+          if (!(list[0].value is StringConstant &&
+              list[1].value is StringConstant &&
+              list[2].value is StringConstant &&
+              list[3].value is BoolConstant)) {
+            continue;
+          }
+
+          String importUri = (list[0].value as StringConstant).value;
+          String clsName = (list[1].value as StringConstant).value;
+          String methodName = (list[2].value as StringConstant).value;
+          bool isRegex = (list[3].value as BoolConstant).value;
           bool isStatic = false;
           if (methodName
               .startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
