@@ -220,6 +220,8 @@ class AopUtils {
             methodName = methodName
                 .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
             isStatic = true;
+          } else {
+            continue;
           }
           return AopItem(
               importUri: importUri,
