@@ -1,3 +1,5 @@
+// ignore_for_file: import_of_legacy_library_into_null_safe, unused_import
+
 import 'package:frontend_server/frontend_server.dart' as frontend;
 import 'package:vm/target/flutter.dart';
 
@@ -99,9 +101,32 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
   }
 
   @override
-  void visitClass(Class cls) {
-    String clsName = cls.name;
-    Library originalLibrary = cls.parent as Library;
+  void visitClass(Class node) {
+    String clsName = node.name;
+    Library originalLibrary = node.parent as Library;
+    bool matches = false;
+    int aopItemInfoListLen = _aopItemList.length;
+    for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
+      AopItem aopItem = _aopItemList[i];
+
+      if ((aopItem.isRegex && RegExp(aopItem.clsName).hasMatch(clsName)) ||
+          (!aopItem.isRegex && clsName == aopItem.clsName) &&
+              originalLibrary.importUri.toString() == aopItem.importUri) {
+        matches = true;
+        break;
+      }
+    }
+    if (matches) {
+      print(
+          "[AspectAopTransformer] visitClass match ${node.parent.runtimeType.toString()} ${node.name}");
+      node.visitChildren(this);
+    }
+  }
+
+  @override
+  void visitExtension(Extension node) {
+    String clsName = node.name;
+    Library originalLibrary = node.parent as Library;
     bool matches = false;
     int aopItemInfoListLen = _aopItemList.length;
     for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
@@ -114,8 +139,22 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
       }
     }
     if (matches) {
-      cls.visitChildren(this);
+      print(
+          "[AspectAopTransformer] visitExtension extension match ${node.parent.runtimeType.toString()} ${node.name}");
+      node.visitChildren(this);
     }
+  }
+
+  @override
+  void visitClassReference(Class node) {
+    //print(
+    //    "[AspectAopTransformer] visitClassReference match ${node.parent.runtimeType.toString()} ${node.name}");
+  }
+
+  @override
+  void visitSuperMethodInvocation(SuperMethodInvocation node) {
+    //print(
+    //    "[AspectAopTransformer] visitSuperMethodInvocation match ${node.parent.runtimeType.toString()} ${node.name}");
   }
 
   @override
@@ -129,6 +168,7 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
       originalClass = node.parent as Class;
       originalLibrary = originalClass.parent as Library;
     }
+
     String? clsName = null;
     String? importUri = null;
     if (needCompareClass) {
@@ -144,7 +184,11 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
               RegExp(aopItem.methodName).hasMatch(procedureName)) ||
           (!aopItem.isRegex && procedureName == aopItem.methodName)) {
         if (needCompareClass) {
-          if (aopItem.clsName == clsName && aopItem.importUri == importUri) {
+          if (((aopItem.isRegex &&
+                      clsName != null &&
+                      RegExp(aopItem.clsName).hasMatch(clsName)) ||
+                  (!aopItem.isRegex && aopItem.clsName == clsName)) &&
+              aopItem.importUri == importUri) {
             matchedAopItem = aopItem;
             break;
           }
@@ -350,6 +394,6 @@ class _AopExecuteVisitor extends RecursiveVisitor<void> {
     //将原本的处理流程替换成注入后的流程
     functionNode.body = block;
     print(
-        "[AspectAopTransformer] inject ${originalProcedure.name.toString()} success");
+        "[AspectAopTransformer] inject ${originalProcedure.name.toString()} success ");
   }
 }

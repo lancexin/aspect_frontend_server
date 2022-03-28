@@ -54,29 +54,45 @@ class MyHomePage extends StatefulWidget {
 
 Future<bool> _test4(int key1, String key2, {String key3 = 'namedkey4'}) async {
   total++;
-  print("[Inject] $total _test4 $key1 $key2 $key3");
+  debugPrint("$total _test4 $key1 $key2 $key3");
   return true;
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+extension ExtensionHomePageState on _MyHomePageState {
+  Future<bool> _test5(int key1, String key2,
+      {String key3 = 'namedkey5'}) async {
+    total++;
+    debugPrint("$total _test5 $key1 $key2 $key3");
+    return false;
+  }
+}
+
+mixin MixinHomePageState {
+  void _test6(int key1, String key2, {String key3 = 'namedkey6'}) {
+    total++;
+    debugPrint("$total _test6 $key1 $key2 $key3");
+  }
+}
+
+class _MyHomePageState extends State<MyHomePage> with MixinHomePageState {
   int _counter = 0;
 
   void _test1(int key1, String key2, {String key3 = 'namedkey1'}) {
     total++;
-    print("[Inject] $total _test1 $key1 $key2 $key3");
+    debugPrint("$total _test1 $key1 $key2 $key3");
   }
 
   Future<bool> _test2(int key1, String key2,
       {String key3 = 'namedkey2'}) async {
     total++;
-    print("[Inject] $total _test2 $key1 $key2 $key3");
+    debugPrint("$total _test2 $key1 $key2 $key3");
     return true;
   }
 
   static Future<bool> _test3(int key1, String key2,
       {String key3 = 'namedkey3'}) async {
     total++;
-    print("[Inject] $total _test3 $key1 $key2 $key3");
+    debugPrint("$total _test3 $key1 $key2 $key3");
     return true;
   }
 
@@ -86,6 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
     _test2(_counter, "positional2");
     _test3(_counter, "positional3");
     _test4(_counter, "positional4");
+    _test5(_counter, "positional5");
+    _test6(_counter, "positional6");
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
