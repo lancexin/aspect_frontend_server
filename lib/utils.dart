@@ -1,18 +1,15 @@
 import 'package:kernel/ast.dart';
 
-import 'transformer.dart';
-
 class AopUtils {
   static final String kImportUriAopAspect = 'dart:core';
   static final String kImportUriAopAspectName = 'aopd:aspect';
   static final String kImportUriAopInjectName = 'aopd:inject';
+  static final String kImportUriAopTryCatchName = 'aopd:trycatch';
 
   static final String kAopAnnotationClassAspect = 'pragma';
 
   static final String kAopAnnotationInstanceMethodPrefix = '-';
   static final String kAopAnnotationStaticMethodPrefix = '+';
-
-  static Set<Procedure> manipulatedProcedureSet = {};
 
   static bool isPragma(String name, String? importUri) {
     if (name == kAopAnnotationClassAspect && importUri == kImportUriAopAspect) {
@@ -168,124 +165,43 @@ class AopUtils {
     return enabled;
   }
 
-  static AopItem? processAopMember(Member member) {
-    //注入的方法强制是静态方法
-    for (Expression annotation in member.annotations) {
-      //Release mode
-      if (annotation is ConstantExpression) {
-        final ConstantExpression constantExpression = annotation;
-        final Constant constant = constantExpression.constant;
-        if (constant is InstanceConstant) {
-          final InstanceConstant instanceConstant = constant;
-          final Class instanceClass = instanceConstant.classNode;
-          final String? instanceImportUri =
-              (instanceClass.parent as Library?)?.importUri.toString();
-          bool aopMethod =
-              AopUtils.isPragma(instanceClass.name, instanceImportUri);
-          if (!aopMethod) {
-            print("${instanceClass.name} aopMethod is false so return");
-            continue;
-          }
-          String annotationName =
-              (instanceConstant.fieldValues.values.first as StringConstant)
-                  .value;
-          if (annotationName != kImportUriAopInjectName) {
-            continue;
-          }
-          List<ConstantMapEntry> list =
-              (instanceConstant.fieldValues.values.last as MapConstant).entries;
-
-          if (list.length != 4) {
-            continue;
-          }
-
-          if (!(list[0].value is StringConstant &&
-              list[1].value is StringConstant &&
-              list[2].value is StringConstant &&
-              list[3].value is BoolConstant)) {
-            continue;
-          }
-
-          String importUri = (list[0].value as StringConstant).value;
-          String clsName = (list[1].value as StringConstant).value;
-          String methodName = (list[2].value as StringConstant).value;
-          bool isRegex = (list[3].value as BoolConstant).value;
-          bool isStatic = false;
-          if (methodName
-              .startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
-            methodName = methodName
-                .substring(AopUtils.kAopAnnotationInstanceMethodPrefix.length);
-          } else if (methodName
-              .startsWith(AopUtils.kAopAnnotationStaticMethodPrefix)) {
-            methodName = methodName
-                .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
-            isStatic = true;
-          } else {
-            continue;
-          }
-          return AopItem(
-              importUri: importUri,
-              clsName: clsName,
-              methodName: methodName,
-              isStatic: isStatic,
-              aopMember: member,
-              isRegex: isRegex);
-        }
-      } else if (annotation is ConstructorInvocation) {
-        final ConstructorInvocation constructorInvocation = annotation;
-        final Class? cls =
-            constructorInvocation.targetReference.node?.parent as Class?;
-        final Library? clsParentLib = cls?.parent as Library?;
-        bool aopMethod =
-            AopUtils.isPragma(cls!.name, clsParentLib?.importUri.toString());
-        if (!aopMethod) {
-          continue;
-        }
-        final StringLiteral stringName =
-            constructorInvocation.arguments.positional[0] as StringLiteral;
-        final String name = stringName.value;
-        if (name != kImportUriAopInjectName) {
-          aopMethod = false;
-          continue;
-        }
-
-        final MapLiteral invocation1 =
-            constructorInvocation.arguments.positional[1] as MapLiteral;
-
-        final StringLiteral stringLiteral0 =
-            invocation1.entries[0].value as StringLiteral;
-        final String importUri = stringLiteral0.value;
-        final StringLiteral stringLiteral1 =
-            invocation1.entries[1].value as StringLiteral;
-        final String clsName = stringLiteral1.value;
-        final StringLiteral stringLiteral2 =
-            invocation1.entries[2].value as StringLiteral;
-        String methodName = stringLiteral2.value;
-        bool isRegex = false;
-
-        final BoolLiteral boolLiteral =
-            invocation1.entries[3].value as BoolLiteral;
-        isRegex = boolLiteral.value;
-
-        bool isStatic = false;
-        if (methodName
-            .startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
-          methodName = methodName
-              .substring(AopUtils.kAopAnnotationInstanceMethodPrefix.length);
-        } else if (methodName
-            .startsWith(AopUtils.kAopAnnotationStaticMethodPrefix)) {
-          methodName = methodName
-              .substring(AopUtils.kAopAnnotationStaticMethodPrefix.length);
-          isStatic = true;
-        }
-        return AopItem(
-            importUri: importUri,
-            clsName: clsName,
-            methodName: methodName,
-            isStatic: isStatic,
-            aopMember: member,
-            isRegex: isRegex);
-      }
+  static Library? findLibrary(TreeNode? node) {
+    if (node == null) {
+      return null;
     }
+    if (node is Library) {
+      return node;
+    }
+    return findLibrary(node.parent);
+  }
+
+  static FunctionNode? findFunctionNode(TreeNode? node) {
+    if (node == null) {
+      return null;
+    }
+    if (node is FunctionNode) {
+      return node;
+    }
+    return findFunctionNode(node.parent);
+  }
+
+  static Procedure? findProcedure(TreeNode? node) {
+    if (node == null) {
+      return null;
+    }
+    if (node is Procedure) {
+      return node;
+    }
+    return findProcedure(node.parent);
+  }
+
+  static FunctionDeclaration? findFunctionDeclaration(TreeNode? node) {
+    if (node == null) {
+      return null;
+    }
+    if (node is FunctionDeclaration) {
+      return node;
+    }
+    return findFunctionDeclaration(node.parent);
   }
 }

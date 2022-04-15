@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+//普通方法拦截
 @pragma("aopd:aspect")
 @pragma('vm:entry-point')
 class Inject {
@@ -22,6 +23,7 @@ class Inject {
     Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
+  //普通方法拦截,带返回值
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {
     "importUri": "package:example/main.dart",
@@ -42,6 +44,7 @@ class Inject {
         proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
+  //普通静态方法拦截,带返回值
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {
     "importUri": "package:example/main.dart",
@@ -62,6 +65,7 @@ class Inject {
         proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
+  //非类中的方法拦截
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {
     "importUri": "package:example/main.dart",
@@ -84,6 +88,45 @@ class Inject {
     return success;
   }
 
+  //非类中的方法拦截
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
+    "clsName": "",
+    "methodName": "+_testtry",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static Future<bool> _testtry(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<String, dynamic> namedParams,
+      Function proceed) async {
+    debugPrint(
+        "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
+    bool success = await Function.apply(
+        proceed, positionalParams, _transToNamedParams(namedParams));
+    debugPrint("[Inject] $functionName result $success");
+    return success;
+  }
+
+  //全局catch拦截
+  @pragma('vm:entry-point')
+  @pragma("aopd:trycatch")
+  //必须是static,不然不起作用
+  static void trycatch(
+    Object exception,
+    StackTrace? stackTrace,
+  ) async {
+    FlutterError.dumpErrorToConsole(
+        FlutterErrorDetails(exception: exception, stack: stackTrace),
+        forceReport: true);
+    debugPrint(
+        "[Inject] trycatch result success ${exception.runtimeType.toString()} ${stackTrace?.runtimeType.toString()}");
+  }
+
+  //Extension里方法拦截
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {
     "importUri": "package:example/main.dart",
@@ -108,6 +151,7 @@ class Inject {
     return success;
   }
 
+  //Mixin里方法拦截的例子
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {
     "importUri": "package:example/main.dart",

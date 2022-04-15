@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 //必须有,不然不起作用
@@ -58,6 +59,17 @@ Future<bool> _test4(int key1, String key2, {String key3 = 'namedkey4'}) async {
   return true;
 }
 
+Future<bool> _testtry(int key1, String key2,
+    {String key3 = 'namedkey4'}) async {
+  try {
+    total++;
+    debugPrint("$total testtry $key1 $key2 $key3");
+    var arr = [];
+    print(arr[10]);
+  } catch (error) {}
+  return true;
+}
+
 extension ExtensionHomePageState on _MyHomePageState {
   Future<bool> _test5(int key1, String key2,
       {String key3 = 'namedkey5'}) async {
@@ -104,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> with MixinHomePageState {
     _test4(_counter, "positional4");
     _test5(_counter, "positional5");
     _test6(_counter, "positional6");
+    _testtry(_counter, "positional7");
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below

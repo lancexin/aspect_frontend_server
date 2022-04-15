@@ -98,6 +98,12 @@
       "languageVersion": "2.15"
     },
     {
+      "name": "charcode",
+      "rootUri": "file:///Users/lixin/Documents/FlutterWorkspace/dart_sdk/sdk/third_party/pkg/charcode",
+      "packageUri": "lib/",
+      "languageVersion": "2.15"
+    },
+    {
       "name": "path",
       "rootUri": "file:///Users/lixin/Documents/FlutterWorkspace/dart_sdk/sdk/third_party/pkg/path",
       "packageUri": "lib/",

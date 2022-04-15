@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 
 import 'package:frontend_server/frontend_server.dart' as frontend;
-import 'transformer.dart';
+import 'transformers.dart';
 
 Future<void> main(List<String> args) async {
   try {
