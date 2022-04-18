@@ -4,6 +4,7 @@ import 'package:frontend_server/frontend_server.dart' as frontend;
 import 'package:vm/target/flutter.dart';
 
 import 'package:kernel/ast.dart';
+import 'method_transformer.dart';
 import 'utils.dart';
 
 class TryCatchItem {
@@ -22,7 +23,7 @@ class TryCacthTransformer implements frontend.ProgramTransformer {
     print("[TryCacthTransformer] start transform");
     tryCatchItem = null;
     manipulateCatchSet.clear();
-    _collectAopItem(component);
+    _collectTryCatchItem(component);
 
     if (tryCatchItem != null) {
       print("[TryCacthTransformer] start visitChildren");
@@ -32,7 +33,17 @@ class TryCacthTransformer implements frontend.ProgramTransformer {
     }
   }
 
-  void _collectAopItem(Component program) {
+  static bool isAopProcedure(Member member) {
+    final aopItem = MethodAopTransformer.processMethodItemMember(member);
+    return aopItem != null;
+  }
+
+  static bool isTryCatchProcedure(Member member) {
+    final aopItem = processTryCatchMember(member);
+    return aopItem != null;
+  }
+
+  void _collectTryCatchItem(Component program) {
     final List<Library> libraries = program.libraries;
 
     if (libraries.isEmpty) {
@@ -77,7 +88,6 @@ class TryCacthTransformer implements frontend.ProgramTransformer {
           bool aopMethod =
               AopUtils.isPragma(instanceClass.name, instanceImportUri);
           if (!aopMethod) {
-            print("${instanceClass.name} aopMethod is false so return");
             continue;
           }
           String annotationName =
@@ -136,6 +146,16 @@ class _TryCatchVisitor extends RecursiveVisitor<void> {
 
   @override
   void defaultMember(Member node) {
+    if (TryCacthTransformer.isAopProcedure(node)) {
+      print(
+          "[TryCacthTransformer] defaultMember isAopProcedure skip ${node.name.text}");
+      return;
+    }
+    if (TryCacthTransformer.isTryCatchProcedure(node)) {
+      print(
+          "[TryCacthTransformer] defaultMember isTryCatchProcedure skip ${node.name.text}");
+      return;
+    }
     node.visitChildren(this);
   }
 
@@ -146,8 +166,15 @@ class _TryCatchVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitCatch(Catch node) {
-    transformCatchNode(
-        AopUtils.findLibrary(node), AopUtils.findProcedure(node), node);
+    var procedure = AopUtils.findProcedure(node);
+    if (procedure != null && TryCacthTransformer.isAopProcedure(procedure)) {
+      return;
+    }
+    if (procedure != null &&
+        TryCacthTransformer.isTryCatchProcedure(procedure)) {
+      return;
+    }
+    transformCatchNode(AopUtils.findLibrary(node), procedure, node);
   }
 
   void transformCatchNode(
@@ -228,52 +255,11 @@ class _TryCatchVisitor extends RecursiveVisitor<void> {
     if (expression is StaticInvocation &&
         expression.precedence == injectProcedure &&
         TryCacthTransformer.processTryCatchMember(injectProcedure) != null) {
+      print(
+          "[TryCacthTransformer] isInjectBlock so return ${expression.name.text}");
       return true;
     } else {
       return false;
-    }
-  }
-
-  Block? getInjectBlock(Block? block, Procedure originalProcedure) {
-    if (block == null) {
-      return block;
-    }
-    if (block.statements.length != 1) {
-      return block;
-    }
-    Expression? expression;
-    if (block.statements.first is ReturnStatement) {
-      expression = (block.statements.first as ReturnStatement).expression;
-    } else if (block.statements.first is ExpressionStatement) {
-      expression = (block.statements.first as ExpressionStatement).expression;
-    } else {
-      return block;
-    }
-
-    if (expression is StaticInvocation) {
-      if (expression.arguments.positional.length != 5) {
-        print(
-            "[AspectAopTransformer] arguments is not 5 so return ${expression.arguments.positional.length}");
-        return block;
-      }
-      if (expression.arguments.positional[1] is StringLiteral &&
-          expression.arguments.positional[2] is ListLiteral &&
-          expression.arguments.positional[3] is MapLiteral &&
-          expression.arguments.positional[4] is FunctionExpression) {
-        if ((expression.arguments.positional[1] as StringLiteral).value ==
-            originalProcedure.name.text) {
-          block = (expression.arguments.positional[4] as FunctionExpression)
-              .function
-              .body as Block?;
-          block = getInjectBlock(block, originalProcedure);
-        }
-        return block;
-      }
-      return block;
-    } else {
-      print(
-          "[AspectAopTransformer] expression is not StaticInvocation so return ");
-      return block;
     }
   }
 }

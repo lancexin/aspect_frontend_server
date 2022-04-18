@@ -92,7 +92,6 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
           bool aopMethod =
               AopUtils.isPragma(instanceClass.name, instanceImportUri);
           if (!aopMethod) {
-            print("${instanceClass.name} aopMethod is false so return");
             continue;
           }
           String annotationName =
@@ -382,48 +381,48 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     }
   }
 
-  Block? getInjectBlock(Block? block, Procedure originalProcedure) {
-    if (block == null) {
-      return block;
-    }
-    if (block.statements.length != 1) {
-      return block;
-    }
-    Expression? expression;
-    if (block.statements.first is ReturnStatement) {
-      expression = (block.statements.first as ReturnStatement).expression;
-    } else if (block.statements.first is ExpressionStatement) {
-      expression = (block.statements.first as ExpressionStatement).expression;
-    } else {
-      return block;
-    }
+  // Block? getInjectBlock(Block? block, Procedure originalProcedure) {
+  //   if (block == null) {
+  //     return block;
+  //   }
+  //   if (block.statements.length != 1) {
+  //     return block;
+  //   }
+  //   Expression? expression;
+  //   if (block.statements.first is ReturnStatement) {
+  //     expression = (block.statements.first as ReturnStatement).expression;
+  //   } else if (block.statements.first is ExpressionStatement) {
+  //     expression = (block.statements.first as ExpressionStatement).expression;
+  //   } else {
+  //     return block;
+  //   }
 
-    if (expression is StaticInvocation) {
-      if (expression.arguments.positional.length != 5) {
-        print(
-            "[MethodAopTransformer] arguments is not 5 so return ${expression.arguments.positional.length}");
-        return block;
-      }
-      if (expression.arguments.positional[1] is StringLiteral &&
-          expression.arguments.positional[2] is ListLiteral &&
-          expression.arguments.positional[3] is MapLiteral &&
-          expression.arguments.positional[4] is FunctionExpression) {
-        if ((expression.arguments.positional[1] as StringLiteral).value ==
-            originalProcedure.name.text) {
-          block = (expression.arguments.positional[4] as FunctionExpression)
-              .function
-              .body as Block?;
-          block = getInjectBlock(block, originalProcedure);
-        }
-        return block;
-      }
-      return block;
-    } else {
-      print(
-          "[MethodAopTransformer] expression is not StaticInvocation so return ");
-      return block;
-    }
-  }
+  //   if (expression is StaticInvocation) {
+  //     if (expression.arguments.positional.length != 5) {
+  //       print(
+  //           "[MethodAopTransformer] arguments is not 5 so return ${expression.arguments.positional.length}");
+  //       return block;
+  //     }
+  //     if (expression.arguments.positional[1] is StringLiteral &&
+  //         expression.arguments.positional[2] is ListLiteral &&
+  //         expression.arguments.positional[3] is MapLiteral &&
+  //         expression.arguments.positional[4] is FunctionExpression) {
+  //       if ((expression.arguments.positional[1] as StringLiteral).value ==
+  //           originalProcedure.name.text) {
+  //         block = (expression.arguments.positional[4] as FunctionExpression)
+  //             .function
+  //             .body as Block?;
+  //         block = getInjectBlock(block, originalProcedure);
+  //       }
+  //       return block;
+  //     }
+  //     return block;
+  //   } else {
+  //     print(
+  //         "[MethodAopTransformer] expression is not StaticInvocation so return ");
+  //     return block;
+  //   }
+  // }
 
   void transformInstanceMethodProcedure(Library? originalLibrary,
       MethodItem aopItem, Procedure originalProcedure) {
@@ -507,6 +506,6 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     //将原本的处理流程替换成注入后的流程
     functionNode.body = block;
     print(
-        "[MethodAopTransformer] inject ${originalProcedure.name.toString()} success ");
+        "[AspectAopTransformer] inject ${originalProcedure.name.toString()} success ");
   }
 }

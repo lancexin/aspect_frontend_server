@@ -12,7 +12,7 @@ class Inject {
     "isRegex": false
   })
   //必须是static,不然不起作用
-  static void _test1(
+  static void _injectTest1(
       Object target,
       String functionName,
       List<dynamic> positionalParams,
@@ -32,7 +32,7 @@ class Inject {
     "isRegex": false
   })
   //必须是static,不然不起作用
-  static Future<bool> _test2(
+  static Future<bool> _injectTest2(
       Object target,
       String functionName,
       List<dynamic> positionalParams,
@@ -53,7 +53,7 @@ class Inject {
     "isRegex": false
   })
   //必须是static,不然不起作用
-  static Future<bool> _test3(
+  static Future<bool> _injectTest3(
       Object target,
       String functionName,
       List<dynamic> positionalParams,
@@ -74,7 +74,7 @@ class Inject {
     "isRegex": false
   })
   //必须是static,不然不起作用
-  static Future<bool> _test4(
+  static Future<bool> _injectTest4(
       Object target,
       String functionName,
       List<dynamic> positionalParams,
@@ -97,7 +97,7 @@ class Inject {
     "isRegex": false
   })
   //必须是static,不然不起作用
-  static Future<bool> _testtry(
+  static Future<bool> _injectTesttry(
       Object target,
       String functionName,
       List<dynamic> positionalParams,
@@ -115,7 +115,7 @@ class Inject {
   @pragma('vm:entry-point')
   @pragma("aopd:trycatch")
   //必须是static,不然不起作用
-  static void trycatch(
+  static void injectTrycatch(
     Object exception,
     StackTrace? stackTrace,
   ) async {
@@ -137,7 +137,7 @@ class Inject {
   //必须是static,不然不起作用
   //这里需要注意Extension的注入和普通方法不同,methodName的写法也与普遍的不同
   //Extension中的方法第一个positionalParams[0]所代表的参数是它扩展的实例本身
-  static Future<bool> _test5(
+  static Future<bool> _injectTest5(
       Object target,
       String functionName,
       List<dynamic> positionalParams,
@@ -160,7 +160,7 @@ class Inject {
     "isRegex": true
   })
   //必须是static,不然不起作用
-  static void _test6(
+  static void _injectTest6(
       Object target,
       String functionName,
       List<dynamic> positionalParams,

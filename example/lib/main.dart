@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 //必须有,不然不起作用
@@ -66,7 +65,9 @@ Future<bool> _testtry(int key1, String key2,
     debugPrint("$total testtry $key1 $key2 $key3");
     var arr = [];
     print(arr[10]);
-  } catch (error) {}
+  } catch (exception, stackTrace) {
+    print("${exception} ${stackTrace}");
+  }
   return true;
 }
 

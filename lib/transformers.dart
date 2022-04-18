@@ -5,7 +5,7 @@ import 'package:vm/target/flutter.dart';
 
 import 'package:kernel/ast.dart';
 import 'method_transformer.dart';
-import 'trycatch_transformers.dart';
+import 'trycatch_transformer.dart';
 import 'utils.dart';
 
 class AspectAopTransformer implements frontend.ProgramTransformer {
