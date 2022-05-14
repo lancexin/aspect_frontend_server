@@ -151,6 +151,25 @@ class Inject {
     return success;
   }
 
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:flutter/src/gestures/binding.dart",
+    "clsName": "GestureBinding",
+    "methodName": "-dispatchEvent",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static void hookHitTest(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<String, dynamic> namedParams,
+      Function proceed) {
+    debugPrint('hookHitTest - start');
+    Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
+    debugPrint('hookHitTest - end');
+  }
+
   //Mixin里方法拦截的例子
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {

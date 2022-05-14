@@ -26,6 +26,8 @@ dart --deterministic --no-sound-null-safety --packages=rebased_package_config.js
 
 2. 执行下面命令测试(注意目录替换)):
 
+
+
 ## 编译aot dill
 dart run frontend_server.dart.snapshot --sdk-root /Users/lixin/Documents/flutter_macos_stable/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --target=flutter --aot --tfa --no-print-incremental-dependencies -Dflutter.inspector.structuredErrors=true -DFLUTTER_WEB_AUTO_DETECT=true -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --packages /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/package_config.json --output-dill app.dill --depfile /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/flutter_build/77af0f210cf497f2ec8c2faa230bd8ab/kernel_snapshot.d package:example/main.dart
 
@@ -35,12 +37,16 @@ dart run frontend_server.dart.snapshot --sdk-root /Users/lixin/Documents/flutter
 ## 测试aot编译成二进制
 /Users/lixin/Documents/flutter_macos_stable/bin/cache/artifacts/engine/android-arm64-release/darwin-x64/gen_snapshot --deterministic --snapshot_kind=app-aot-elf --elf=app.so --strip app.dill
 
+## dill 文件注入成功检测
+dart /Users/lixin/Documents/FlutterWorkspace/dart_sdk/sdk/pkg/vm/bin/dump_kernel.dart app.dill injected.out.dill.txt
 
 # 替换flutter中的frontend_server.dart.snapshot
 将新编译的frontend_server.dart.snapshot覆盖 flutter_macos_stable/bin/cache/artifacts/engine/darwin-x64/frontend_server.dart.snapshot
 
 # 测试运行
 cd example
+flutter clean
+flutter pub get
 flutter run
 
 ### 该方法和aspectd的区别
