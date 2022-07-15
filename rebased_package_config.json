@@ -129,12 +129,12 @@
     },
     {
       "name": "aspect_frontend_server",
-      "rootUri": ".",
+      "rootUri": "../",
       "packageUri": "lib/",
-      "languageVersion": "2.15"
+      "languageVersion": "2.12"
     }
   ],
-  "generated": "2022-03-03T03:33:06.560095Z",
+  "generated": "2022-06-13T06:10:22.561773Z",
   "generator": "pub",
-  "generatorVersion": "2.16.1"
+  "generatorVersion": "2.17.0"
 }

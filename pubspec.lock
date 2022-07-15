@@ -8,13 +8,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "34.0.0"
-  _js_interop_checks:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/_js_interop_checks"
-      relative: true
-    source: path
-    version: "0.0.0"
   analyzer:
     dependency: transitive
     description:
@@ -36,13 +29,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.8.2"
-  bazel_worker:
-    dependency: transitive
-    description:
-      name: bazel_worker
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -57,13 +43,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.2.1"
-  build_integration:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/build_integration"
-      relative: true
-    source: path
-    version: "0.0.0"
   built_collection:
     dependency: transitive
     description:
@@ -106,13 +85,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.15.0"
-  compiler:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/compiler"
-      relative: true
-    source: path
-    version: "0.0.0"
   convert:
     dependency: transitive
     description:
@@ -134,13 +106,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.0.1"
-  dart2js_info:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/dart2js_info"
-      relative: true
-    source: path
-    version: "0.0.0"
   dart_style:
     dependency: transitive
     description:
@@ -148,13 +113,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.2.1"
-  dev_compiler:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/dev_compiler"
-      relative: true
-    source: path
-    version: "0.0.0"
   file:
     dependency: transitive
     description:
@@ -169,20 +127,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.0"
-  front_end:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/front_end"
-      relative: true
-    source: path
-    version: "0.0.0"
-  frontend_server:
-    dependency: "direct main"
-    description:
-      path: "../dart_sdk/sdk/pkg/frontend_server"
-      relative: true
-    source: path
-    version: "0.0.0"
   frontend_server_client:
     dependency: transitive
     description:
@@ -225,27 +169,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.6.4"
-  js_ast:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/js_ast"
-      relative: true
-    source: path
-    version: "0.0.0"
-  js_runtime:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/js_runtime"
-      relative: true
-    source: path
-    version: "0.0.0"
-  kernel:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/kernel"
-      relative: true
-    source: path
-    version: "0.0.0"
   logging:
     dependency: transitive
     description:
@@ -309,13 +232,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.5.0"
-  protobuf:
-    dependency: transitive
-    description:
-      name: protobuf
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.0.1"
   pub_semver:
     dependency: transitive
     description:
@@ -435,20 +351,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.3.0"
-  usage:
-    dependency: transitive
-    description:
-      name: usage
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.0.2"
-  vm:
-    dependency: transitive
-    description:
-      path: "../dart_sdk/sdk/pkg/vm"
-      relative: true
-    source: path
-    version: "0.0.0"
   vm_service:
     dependency: transitive
     description:
