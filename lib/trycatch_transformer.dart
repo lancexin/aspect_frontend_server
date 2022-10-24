@@ -17,6 +17,7 @@ class TryCacthTransformer implements frontend.ProgramTransformer {
   TryCatchItem? tryCatchItem;
 
   static Set<Catch> manipulateCatchSet = {};
+  static Set<Procedure> manipulatedProcedureSet = {};
 
   @override
   void transform(Component component) {
@@ -174,16 +175,25 @@ class _TryCatchVisitor extends RecursiveVisitor<void> {
         TryCacthTransformer.isTryCatchProcedure(procedure)) {
       return;
     }
-    transformCatchNode(AopUtils.findLibrary(node), procedure, node);
+    transformCatchNode(
+        AopUtils.findLibrary(node), procedure, node, node.parent);
   }
 
-  void transformCatchNode(
-      Library? originalLibrary, Procedure? originalProcedure, Catch node) {
+  void transformCatchNode(Library? originalLibrary,
+      Procedure? originalProcedure, Catch node, TreeNode? parent) {
     if (TryCacthTransformer.manipulateCatchSet.contains(node)) {
-      print("[TryCacthTransformer] transform skip ");
+      print("[TryCacthTransformer] transform skip node");
       return;
     }
+    // if (TryCacthTransformer.manipulatedProcedureSet
+    //     .contains(originalProcedure)) {
+    //   print("[TryCacthTransformer] transform skip originalProcedure");
+    //   return;
+    // }
     TryCacthTransformer.manipulateCatchSet.add(node);
+    // if (originalProcedure != null) {
+    //   TryCacthTransformer.manipulatedProcedureSet.add(originalProcedure);
+    // }
 
     var statement = node.body;
     var exception = node.exception;
@@ -211,6 +221,14 @@ class _TryCatchVisitor extends RecursiveVisitor<void> {
 
     //创建调用静态方法的参数
     final Arguments redirectArguments = Arguments.empty();
+
+    if (originalProcedure?.name.text != null) {
+      redirectArguments.positional
+          .add(StringLiteral(originalProcedure!.name.text));
+    } else {
+      redirectArguments.positional.add(NullLiteral());
+    }
+
     if (exception != null) {
       redirectArguments.positional.add(VariableGet(exception));
     } else {
@@ -227,10 +245,10 @@ class _TryCatchVisitor extends RecursiveVisitor<void> {
     final StaticInvocation callExpression = StaticInvocation(
         tryCatchItem!.aopMember as Procedure, redirectArguments);
     final Block block = Block(<Statement>[]);
-    bodyStatements.addStatement(ExpressionStatement(callExpression));
+    block.addStatement(ExpressionStatement(callExpression));
     //将原本的处理流程替换成注入后的流程
     print(
-        "[TryCacthTransformer] inject success ${originalProcedure?.name.text} ${originalLibrary.name}");
+        "[TryCacthTransformer] inject success ${originalProcedure?.name.text} ${originalLibrary.fileUri.toString()}");
     bodyStatements.statements.forEach((element) {
       block.addStatement(element);
     });

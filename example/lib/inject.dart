@@ -111,20 +111,44 @@ class Inject {
     return success;
   }
 
-  //全局catch拦截
+  //非类中的方法拦截
   @pragma('vm:entry-point')
-  @pragma("aopd:trycatch")
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
+    "clsName": "DialogExt",
+    "methodName": "-DialogExt|showNotice",
+    "isRegex": false
+  })
   //必须是static,不然不起作用
-  static void injectTrycatch(
-    Object exception,
-    StackTrace? stackTrace,
-  ) async {
-    FlutterError.dumpErrorToConsole(
-        FlutterErrorDetails(exception: exception, stack: stackTrace),
-        forceReport: true);
+  static Future<bool> _injectShowNotice(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<String, dynamic> namedParams,
+      Function proceed) async {
     debugPrint(
-        "[Inject] trycatch result success ${exception.runtimeType.toString()} ${stackTrace?.runtimeType.toString()}");
+        "[Inject] $functionName start ${namedParams["title"]} ${namedParams["message"]}");
+    bool success = await Function.apply(
+        proceed, positionalParams, _transToNamedParams(namedParams));
+    debugPrint("[Inject] $functionName result $success");
+    return success;
   }
+
+  // //全局catch拦截
+  // @pragma('vm:entry-point')
+  // @pragma("aopd:trycatch")
+  // //必须是static,不然不起作用
+  // static void injectTrycatch(
+  //   String? functionName,
+  //   Object exception,
+  //   StackTrace? stackTrace,
+  // ) async {
+  //   var info = {
+  //     "message":
+  //         "程序运行错误: $functionName | ${exception.toString()},详情: ${stackTrace?.toString()}",
+  //   };
+  //   debugPrint(info["message"].toString());
+  // }
 
   //Extension里方法拦截
   @pragma('vm:entry-point')
@@ -188,6 +212,130 @@ class Inject {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
     Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
+    "clsName": "MixinHomePageState2",
+    "methodName": "-_test7",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static void _injectTest7(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<String, dynamic> namedParams,
+      Function proceed) async {
+    debugPrint(
+        "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
+    Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
+    "clsName": "RepositoryImpl",
+    "methodName": "-getAppVersion",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static Future<int> _injectGetAppVersion(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<String, dynamic> namedParams,
+      Function proceed) async {
+    debugPrint("[Inject] $functionName start: ${namedParams["packageName"]}");
+    int result = await Function.apply(
+        proceed, positionalParams, _transToNamedParams(namedParams));
+    debugPrint("[Inject] $functionName result: $result");
+    return result;
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
+    "clsName": "BaseRepository",
+    "methodName": "-getAppVersion2",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static Future<int> _injectGetAppVersion2(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<String, dynamic> namedParams,
+      Function proceed) async {
+    debugPrint("[Inject] $functionName start: ${namedParams["packageName"]}");
+    int result = await Function.apply(
+        proceed, positionalParams, _transToNamedParams(namedParams));
+    debugPrint("[Inject] $functionName result: $result");
+    return result;
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
+    "clsName": "RepositoryImpl",
+    "methodName": "-getAppVersion2",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static Future<int> _injectGetAppVersion22(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<String, dynamic> namedParams,
+      Function proceed) async {
+    debugPrint(
+        "[Inject] _injectGetAppVersion22 start: ${namedParams["packageName"]}");
+    int result = await Function.apply(
+        proceed, positionalParams, _transToNamedParams(namedParams));
+    debugPrint("[Inject] _injectGetAppVersion22 result: $result");
+    return result;
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/test_mixin.dart",
+    "clsName": r"_?&BaseController.*&MixinBaseController",
+    "methodName": "-testMixin",
+    "isRegex": true
+  })
+  //必须是static,不然不起作用
+  static dynamic testMixin(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<String, dynamic> namedParams,
+      Function proceed) async {
+    debugPrint("[Inject] testMixin start: ${namedParams["packageName"]}");
+
+    return Function.apply(
+        proceed, positionalParams, _transToNamedParams(namedParams));
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/test_mixin.dart",
+    "clsName": "BaseControllerImpl",
+    "methodName": "-baseTest",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static dynamic baseTest(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<String, dynamic> namedParams,
+      Function proceed) async {
+    debugPrint(
+        "[Inject] baseTest start: ${target.runtimeType.toString()} $functionName ");
+
+    return Function.apply(
+        proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   @pragma('vm:entry-point')

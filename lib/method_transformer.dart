@@ -226,7 +226,12 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
   @override
   void visitClass(Class node) {
     String clsName = node.name;
-    Library originalLibrary = node.parent as Library;
+
+    Library originalLibrary = node.enclosingLibrary;
+    if (node.isAnonymousMixin && node.isEliminatedMixin) {
+      print(
+          "[MethodAopTransformer] ${node.name} isAnonymousMixin:${originalLibrary.importUri.toString()}}");
+    }
     bool matches = false;
     int aopItemInfoListLen = _aopItemList.length;
     for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
@@ -239,6 +244,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
         break;
       }
     }
+
     if (matches) {
       print(
           "[MethodAopTransformer] visitClass match ${node.parent.runtimeType.toString()} ${node.name}");
@@ -277,7 +283,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     if (node.parent is Class) {
       needCompareClass = true;
       originalClass = node.parent as Class;
-      originalLibrary = originalClass.parent as Library;
+      originalLibrary = originalClass.enclosingLibrary;
     }
 
     String? clsName = null;

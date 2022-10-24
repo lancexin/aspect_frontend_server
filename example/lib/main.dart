@@ -1,6 +1,8 @@
+import 'package:example/test_mixin.dart';
 import 'package:flutter/material.dart';
 
 //必须有,不然不起作用
+// ignore: unused_import
 import 'inject.dart';
 
 void main() {
@@ -49,7 +51,7 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() => MyHomePageState();
 }
 
 Future<bool> _test4(int key1, String key2, {String key3 = 'namedkey4'}) async {
@@ -64,14 +66,34 @@ Future<bool> _testtry(int key1, String key2,
     total++;
     debugPrint("$total testtry $key1 $key2 $key3");
     var arr = [];
-    //print(arr[10]);
+    debugPrint(arr[10]);
   } catch (exception, stackTrace) {
-    print("${exception} ${stackTrace}");
+    debugPrint("${exception.toString()} ${stackTrace.toString()}");
   }
   return true;
 }
 
-extension ExtensionHomePageState on _MyHomePageState {
+Future<bool> _testtry2(int key1, String key2) async {
+  return _testtry(key1, key2);
+}
+
+abstract class GetInterface {}
+
+class _GetImpl extends GetInterface {}
+
+final Get = _GetImpl();
+
+extension DialogExt on GetInterface {
+  Future<bool> showNotice({
+    String title = "提示",
+    required String message,
+  }) async {
+    debugPrint(" showNotice $title $message");
+    return true;
+  }
+}
+
+extension ExtensionHomePageState on MyHomePageState {
   Future<bool> _test5(int key1, String key2,
       {String key3 = 'namedkey5'}) async {
     total++;
@@ -87,8 +109,45 @@ mixin MixinHomePageState {
   }
 }
 
-class _MyHomePageState extends State<MyHomePage> with MixinHomePageState {
+mixin MixinHomePageState2<T extends StatefulWidget> on State<T> {
+  void _test7(int key1, String key2, {String key3 = 'namedkey7'}) {
+    total++;
+    debugPrint("$total _test7 $key1 $key2 $key3");
+  }
+}
+
+abstract class Repository {}
+
+abstract class BaseRepository extends Repository with MixinUpgrade {
+  Future<int> getAppVersion2({required String packageName}) async {
+    debugPrint("getAppVersion2 $packageName");
+    return 0;
+  }
+}
+
+mixin MixinUpgrade on Repository {
+  Future<int> getAppVersion({required String packageName});
+}
+
+class RepositoryImpl extends BaseRepository {
+  @override
+  Future<int> getAppVersion({required String packageName}) async {
+    debugPrint("getAppVersion $packageName");
+    return 0;
+  }
+
+  @override
+  Future<int> getAppVersion2({required String packageName}) async {
+    debugPrint("getAppVersion2 override  $packageName");
+    return super.getAppVersion2(packageName: packageName);
+  }
+}
+
+class MyHomePageState extends State<MyHomePage>
+    with MixinHomePageState, MixinHomePageState2 {
   int _counter = 0;
+
+  final BaseRepository repository = RepositoryImpl();
 
   void _test1(int key1, String key2, {String key3 = 'namedkey1'}) {
     total++;
@@ -109,15 +168,21 @@ class _MyHomePageState extends State<MyHomePage> with MixinHomePageState {
     return true;
   }
 
-  void _incrementCounter() {
+  void _incrementCounter() async {
     total = 0;
-    _test1(_counter, "positional1");
-    _test2(_counter, "positional2");
-    _test3(_counter, "positional3");
-    _test4(_counter, "positional4");
-    _test5(_counter, "positional5");
-    _test6(_counter, "positional6");
-    _testtry(_counter, "positional7");
+    // _test1(_counter, "positional1");
+    // _test2(_counter, "positional2");
+    // _test3(_counter, "positional3");
+    // await _test4(_counter, "positional4");
+    // await _test5(_counter, "positional5");
+    // _test6(_counter, "positional6");
+    _test7(_counter, "positional7");
+    // await repository.getAppVersion(packageName: "packageName");
+    // await repository.getAppVersion2(packageName: "packageName2");
+    //await Get.showNotice(message: "this is a notice");
+    //_testtry2(_counter, "positional7");
+    BaseControllerImpl baseControllerImpl = BaseControllerImpl();
+    baseControllerImpl.baseTest();
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
