@@ -33,8 +33,6 @@ dart --deterministic --no-sound-null-safety --packages=rebased_package_config.js
 ## 编译aot dill
 dart run frontend_server.dart.snapshot --sdk-root /Users/lixin/Documents/flutter_macos_stable/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --target=flutter --aot --tfa --no-print-incremental-dependencies -Dflutter.inspector.structuredErrors=true -DFLUTTER_WEB_AUTO_DETECT=true -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --packages /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/package_config.json --output-dill app.dill --depfile /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/flutter_build/1f083b7beecc20d87dfa8f7e4ca58986/kernel_snapshot.d package:example/main.dart
 
-
-
 ## 编译运行时dill
 dart run frontend_server.dart.snapshot --sdk-root /Users/lixin/Documents/flutter_macos_stable/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --target=flutter --no-print-incremental-dependencies -Dflutter.inspector.structuredErrors=true -DFLUTTER_WEB_AUTO_DETECT=true -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --packages /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/package_config.json --output-dill app.dill --depfile /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/flutter_build/1f083b7beecc20d87dfa8f7e4ca58986/kernel_snapshot.d package:example/main.dart
 
@@ -44,7 +42,6 @@ dart run frontend_server.dart.snapshot --sdk-root /Users/lixin/Documents/flutter
 ## dill 文件注入成功检测
 dart run dump_kernel.dart.snapshot app.dill injected.out.dill.txt
 
-dart /Users/lixin/Documents/FlutterWorkspace/dart_sdk/sdk/pkg/vm/bin/dump_kernel.dart example/.dart_tool/flutter_build/1f083b7beecc20d87dfa8f7e4ca58986/app.dill injected.out.dill.txt
 
 # 替换flutter中的frontend_server.dart.snapshot
 1.将新编译的frontend_server.dart.snapshot覆盖 flutter_macos_stable/bin/cache/artifacts/engine/darwin-x64/frontend_server.dart.snapshot

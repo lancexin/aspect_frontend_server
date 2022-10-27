@@ -102,7 +102,7 @@ extension ExtensionHomePageState on MyHomePageState {
   }
 }
 
-mixin MixinHomePageState {
+mixin Test6Mixin {
   void _test6(int key1, String key2, {String key3 = 'namedkey6'}) {
     total++;
     debugPrint("$total _test6 $key1 $key2 $key3");
@@ -144,7 +144,7 @@ class RepositoryImpl extends BaseRepository {
 }
 
 class MyHomePageState extends State<MyHomePage>
-    with MixinHomePageState, MixinHomePageState2 {
+    with Test6Mixin, MixinHomePageState2 {
   int _counter = 0;
 
   final BaseRepository repository = RepositoryImpl();
@@ -175,7 +175,7 @@ class MyHomePageState extends State<MyHomePage>
     // _test3(_counter, "positional3");
     // await _test4(_counter, "positional4");
     // await _test5(_counter, "positional5");
-    // _test6(_counter, "positional6");
+    _test6(_counter, "positional6");
     _test7(_counter, "positional7");
     // await repository.getAppVersion(packageName: "packageName");
     // await repository.getAppVersion2(packageName: "packageName2");

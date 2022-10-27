@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 
 //普通方法拦截
 @pragma("aopd:aspect")
@@ -183,24 +184,25 @@ class Inject {
     "isRegex": false
   })
   //必须是static,不然不起作用
-  static void hookHitTest(
+  static dynamic dispatchEvent(
       Object target,
       String functionName,
       List<dynamic> positionalParams,
       Map<String, dynamic> namedParams,
       Function proceed) {
-    debugPrint('hookHitTest - start');
-    Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
-    debugPrint('hookHitTest - end');
+    PointerEvent event = positionalParams[0];
+    debugPrint('dispatchEvent - start ${event.kind.name}');
+    return Function.apply(
+        proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   //Mixin里方法拦截的例子
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {
     "importUri": "package:example/main.dart",
-    "clsName": r"__.+MixinHomePageState",
+    "clsName": "Test6Mixin",
     "methodName": "-_test6",
-    "isRegex": true
+    "isRegex": false
   })
   //必须是static,不然不起作用
   static void _injectTest6(
@@ -300,9 +302,9 @@ class Inject {
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {
     "importUri": "package:example/test_mixin.dart",
-    "clsName": r"_?&BaseController.*&MixinBaseController",
+    "clsName": "MixinBaseController",
     "methodName": "-testMixin",
-    "isRegex": true
+    "isRegex": false
   })
   //必须是static,不然不起作用
   static dynamic testMixin(
@@ -311,7 +313,7 @@ class Inject {
       List<dynamic> positionalParams,
       Map<String, dynamic> namedParams,
       Function proceed) async {
-    debugPrint("[Inject] testMixin start: ${namedParams["packageName"]}");
+    debugPrint("[Inject] testMixin start");
 
     return Function.apply(
         proceed, positionalParams, _transToNamedParams(namedParams));

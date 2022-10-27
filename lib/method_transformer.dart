@@ -206,21 +206,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
 
   @override
   void visitLibrary(Library library) {
-    String importUri = library.importUri.toString();
-
-    bool matches = false;
-    int aopItemInfoListLen = _aopItemList.length;
-    for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
-      MethodItem aopItem = _aopItemList[i];
-      if ((aopItem.isRegex && RegExp(aopItem.importUri).hasMatch(importUri)) ||
-          (!aopItem.isRegex && importUri == aopItem.importUri)) {
-        matches = true;
-        break;
-      }
-    }
-    if (matches) {
-      library.visitChildren(this);
-    }
+    library.visitChildren(this);
   }
 
   @override
@@ -228,18 +214,24 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     String clsName = node.name;
 
     Library originalLibrary = node.enclosingLibrary;
+
     if (node.isAnonymousMixin && node.isEliminatedMixin) {
-      print(
-          "[MethodAopTransformer] ${node.name} isAnonymousMixin:${originalLibrary.importUri.toString()}}");
+      if (node.implementedTypes.isNotEmpty) {
+        originalLibrary =
+            node.implementedTypes.first.classNode.enclosingLibrary;
+        clsName = node.implementedTypes.first.classNode.name;
+      }
+      //print(
+      //    "[MethodAopTransformer] visitClass isAnonymousMixin ${node.name} ${originalLibrary.importUri.toString()}}");
     }
     bool matches = false;
     int aopItemInfoListLen = _aopItemList.length;
     for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
       MethodItem aopItem = _aopItemList[i];
 
-      if ((aopItem.isRegex && RegExp(aopItem.clsName).hasMatch(clsName)) ||
-          (!aopItem.isRegex && clsName == aopItem.clsName) &&
-              originalLibrary.importUri.toString() == aopItem.importUri) {
+      if (((aopItem.isRegex && RegExp(aopItem.clsName).hasMatch(clsName)) ||
+              (!aopItem.isRegex && clsName == aopItem.clsName)) &&
+          originalLibrary.importUri.toString() == aopItem.importUri) {
         matches = true;
         break;
       }
@@ -247,7 +239,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
 
     if (matches) {
       print(
-          "[MethodAopTransformer] visitClass match ${node.parent.runtimeType.toString()} ${node.name}");
+          "[MethodAopTransformer] visitClass match ${originalLibrary.importUri} ${node.name}");
       node.visitChildren(this);
     }
   }
@@ -283,7 +275,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     if (node.parent is Class) {
       needCompareClass = true;
       originalClass = node.parent as Class;
-      originalLibrary = originalClass.enclosingLibrary;
+      originalLibrary = node.enclosingLibrary;
     }
 
     String? clsName = null;
@@ -291,6 +283,20 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     if (needCompareClass) {
       clsName = originalClass?.name;
       importUri = originalLibrary?.importUri.toString();
+    }
+
+    if (needCompareClass &&
+        originalClass != null &&
+        originalClass.isAnonymousMixin &&
+        originalClass.isEliminatedMixin) {
+      if (originalClass.implementedTypes.isNotEmpty) {
+        clsName = originalClass.implementedTypes.first.classNode.name;
+        importUri = originalClass
+            .implementedTypes.first.classNode.enclosingLibrary.importUri
+            .toString();
+        //print(
+        //    "[MethodAopTransformer] visitProcedure isAnonymousMixin so transform it clasName[${originalClass.name} to $clsName] importUri[${originalLibrary?.importUri.toString()} to $importUri]");
+      }
     }
 
     MethodItem? matchedAopItem = null;
@@ -316,7 +322,17 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
       }
     }
     if (matchedAopItem == null) {
+      if ((originalClass?.isAnonymousMixin ?? false) &&
+          (originalClass?.isEliminatedMixin ?? false)) {
+        //print(
+        //    "[MethodAopTransformer] visitProcedure isAnonymousMixin so transform it clasName[${originalClass?.name} to $clsName] importUri[${originalLibrary?.importUri.toString()} to $importUri]");
+        //print(
+        //    "[MethodAopTransformer] visitProcedure notMatch ${originalLibrary?.importUri.toString()}|${originalClass?.name}|$procedureName");
+      }
       return;
+    } else {
+      print(
+          "[MethodAopTransformer] visitProcedure match ${originalLibrary?.importUri.toString()}|${originalClass?.name}|$procedureName");
     }
 
     try {
@@ -329,7 +345,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
               node.parent?.parent as Library, matchedAopItem, node);
         } else {
           print(
-              "[MethodAopTransformer] error ${node.parent.runtimeType.toString()} ${node.name.text}");
+              "[MethodAopTransformer] visitProcedure error ${node.parent.runtimeType.toString()} ${node.name.text}");
         }
       } else {
         if (node.parent != null) {
@@ -337,12 +353,12 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
               node.parent?.parent as Library, matchedAopItem, node);
         } else {
           print(
-              "[MethodAopTransformer] error node.parent == null ${node.name.text}");
+              "[MethodAopTransformer] visitProcedure error node.parent == null ${node.name.text}");
         }
       }
     } catch (error, stack) {
       print(
-          "[MethodAopTransformer] ${error.toString()} \n ${stack.toString()}");
+          "[MethodAopTransformer] visitProcedure ${error.toString()} \n ${stack.toString()}");
     }
   }
 
