@@ -10,24 +10,21 @@ flutter_macos_stable/bin/cache/dart-sdk/bin/snapshots/frontend_server.dart.snaps
 
 
 # 编译之前
-1. 下载最新的dart-sdk,具体下载方法可以查看https://github.com/dart-lang/sdk/wiki/Building,这里建议用depot_tools的方式下载,因为直接下载github上的sdk,third_party目录下面不会有你需要的包
-2. 将dart-sdk切换到flutter对应的版本,一般情况下flutter对应的dart版本是可以通用的,但是如果flutter有大版本升级,需要切换到对应的版本.
-3. 修改rebased_package_config.json中依赖库rootUri指向你现在的dart-sdk绝对路径
+1. 下载最新的dart-sdk,具体下载方法可以查看 https://github.com/dart-lang/sdk/wiki/Building 
 
-# 关于ide代码报错
-1. 并不影响程序的编译,因为包的依赖关系是在rebased_package_config.json的,
-2. 如果不想看到报错或需要代码提示功能,可以rebased_package_config.json替换.dart_tool/package_config.json
+这里建议用depot_tools的方式下载,因为直接下载github上的sdk,third_party目录下面不会有你需要的包
+2. 将dart-sdk切换到flutter对应的版本,一般情况下flutter对应的dart版本是可以通用的,但是如果flutter有大版本升级,需要切换到对应的版本.
+
 
 # 编译方式
-dart --deterministic --no-sound-null-safety --packages=rebased_package_config.json --snapshot=frontend_server.dart.snapshot --snapshot-kind=kernel lib/starter.dart
+dart --deterministic --no-sound-null-safety --snapshot=frontend_server.dart.snapshot --snapshot-kind=kernel bin/starter.dart
 
-dart --deterministic --no-sound-null-safety --packages=rebased_package_config.json --snapshot=dump_kernel.dart.snapshot --snapshot-kind=kernel lib/dump_kernel.dart
+dart --deterministic --no-sound-null-safety --snapshot=dump_kernel.dart.snapshot --snapshot-kind=kernel lib/dump_kernel.dart
 
 # 测试编译
 1. 生成kernel_snapshot.d,先用普通方法run一下example,在example/.dart_tool/flutter_build下面会有生成编译临时的文件
 
 2. 执行下面命令测试(注意目录替换)):
-
 
 
 ## 编译aot dill
@@ -37,7 +34,7 @@ dart run frontend_server.dart.snapshot --sdk-root /Users/lixin/Documents/flutter
 dart run frontend_server.dart.snapshot --sdk-root /Users/lixin/Documents/flutter_macos_stable/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --target=flutter --no-print-incremental-dependencies -Dflutter.inspector.structuredErrors=true -DFLUTTER_WEB_AUTO_DETECT=true -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --packages /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/package_config.json --output-dill app.dill --depfile /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/flutter_build/1f083b7beecc20d87dfa8f7e4ca58986/kernel_snapshot.d package:example/main.dart
 
 ## 测试aot编译成二进制
-/Users/lixin/Documents/flutter_macos_stable/bin/cache/artifacts/engine/android-arm64-release/darwin-x64/gen_snapshot --deterministic --snapshot_kind=app-aot-elf --elf=app.so --strip app.dill
+flutter_macos_stable/bin/cache/artifacts/engine/android-arm64-release/darwin-x64/gen_snapshot --deterministic --snapshot_kind=app-aot-elf --elf=app.so --strip app.dill
 
 ## dill 文件注入成功检测
 dart run dump_kernel.dart.snapshot app.dill injected.out.dill.txt
@@ -46,7 +43,7 @@ dart run dump_kernel.dart.snapshot app.dill injected.out.dill.txt
 # 替换flutter中的frontend_server.dart.snapshot
 1.将新编译的frontend_server.dart.snapshot覆盖 flutter_macos_stable/bin/cache/artifacts/engine/darwin-x64/frontend_server.dart.snapshot
 
-2.将新编译的frontend_server.dart.snapshot覆盖 /Users/lixin/Documents/flutter_macos_stable/bin/cache/dart-sdk/bin/snapshots
+2.将新编译的frontend_server.dart.snapshot覆盖 flutter_macos_stable/bin/cache/dart-sdk/bin/snapshots
 
 # 测试运行
 cd example
