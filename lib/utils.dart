@@ -69,17 +69,18 @@ class AopUtils {
     }
     if (node is FunctionType) {
       return FunctionType(
-          deepCopyASTNodes(node.positionalParameters),
-          deepCopyASTNode(node.returnType, isReturnType: true),
-          Nullability.legacy,
-          namedParameters: deepCopyASTNodes(node.namedParameters),
-          typeParameters: deepCopyASTNodes(node.typeParameters),
-          requiredParameterCount: node.requiredParameterCount,
-          typedefType: deepCopyASTNode(node.typedefType,
-              ignoreGenerics: ignoreGenerics));
+        deepCopyASTNodes(node.positionalParameters),
+        deepCopyASTNode(node.returnType, isReturnType: true),
+        node.declaredNullability,
+        namedParameters: deepCopyASTNodes(node.namedParameters),
+        typeParameters: deepCopyASTNodes(node.typeParameters),
+        requiredParameterCount: node.requiredParameterCount,
+        // typedefType: deepCopyASTNode(node.typedefType,
+        //     ignoreGenerics: ignoreGenerics)
+      );
     }
     if (node is TypedefType) {
-      return TypedefType(node.typedefNode, Nullability.legacy,
+      return TypedefType(node.typedefNode, node.declaredNullability,
           deepCopyASTNodes(node.typeArguments, ignoreGeneric: ignoreGenerics));
     }
     if (node is InterfaceType) {

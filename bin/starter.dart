@@ -2,10 +2,10 @@
 
 import 'dart:io';
 import 'package:args/args.dart';
-import 'package:dydart/aspect_frontend_server.dart';
+import 'package:aspect_frontend_server/aspect_frontend_server.dart';
 
 import 'package:frontend_server/frontend_server.dart' as frontend;
-import 'package:dydart/proxy/frontend_server_proxy.dart';
+import 'package:aspect_frontend_server/proxy/frontend_server_proxy.dart';
 
 Future<void> main(List<String> args) async {
   try {
