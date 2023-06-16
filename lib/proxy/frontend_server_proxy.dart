@@ -1,7 +1,18 @@
-// @dart = 2.9
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// ignore_for_file: implementation_imports, constant_identifier_names
+
+// front_end/src imports below that require lint `ignore_for_file` are a
+// temporary state of things until frontend team builds better api that would
+// replace api used below. This api was made private in an effort to discourage
+// further use.
 
 import 'dart:async';
-import 'dart:io' hide FileSystemEntity;
+import 'dart:convert';
+import 'dart:io' show File, IOSink, stdout;
+import 'dart:typed_data' show BytesBuilder;
 
 import 'package:args/args.dart';
 import 'package:dev_compiler/dev_compiler.dart'
@@ -10,7 +21,8 @@ import 'package:dev_compiler/dev_compiler.dart'
         ExpressionCompiler,
         parseModuleFormat,
         ProgramCompiler;
-
+import 'package:front_end/src/api_unstable/ddc.dart' as ddc
+    show IncrementalCompiler;
 import 'package:front_end/src/api_unstable/vm.dart';
 import 'package:front_end/widget_cache.dart';
 import 'package:kernel/ast.dart' show Library, Procedure, LibraryDependency;
@@ -20,78 +32,79 @@ import 'package:kernel/kernel.dart'
 import 'package:kernel/target/targets.dart' show targets, TargetFlags;
 import 'package:package_config/package_config.dart';
 import 'package:usage/uuid/uuid.dart';
-
 import 'package:vm/incremental_compiler.dart' show IncrementalCompiler;
-
-import 'package:frontend_server/src/javascript_bundle.dart';
-import 'package:frontend_server/src/strong_components.dart';
-
+import 'package:vm/kernel_front_end.dart';
+import 'package:vm/target_os.dart'; // For possible --target-os values.
 import 'package:frontend_server/frontend_server.dart';
+import 'package:frontend_server/src/javascript_bundle.dart';
+
 import 'kernel_front_end_proxy.dart';
 
 class FrontendCompilerProxy extends FrontendCompiler {
-  StringSink _outputStream;
-  BinaryPrinterFactory printerFactory;
-
-  bool _printIncrementalDependencies;
-
-  CompilerOptions _compilerOptions;
-  ProcessedOptions _processedOptions;
-  FileSystem _fileSystem;
-  Uri _mainSource;
-  List<Uri> _additionalSources;
-  ArgResults _options;
-
-  IncrementalCompiler _generator;
-  JavaScriptBundler _bundler;
-
-  WidgetCache _widgetCache;
-
-  String _kernelBinaryFilename;
-  String _kernelBinaryFilenameIncremental;
-  String _kernelBinaryFilenameFull;
-  String _initializeFromDill;
-  bool _assumeInitializeFromDillUpToDate;
-
-  Set<Uri> previouslyReportedDependencies = Set<Uri>();
-
   FrontendCompilerProxy(this._outputStream,
-      {BinaryPrinterFactory printerFactory,
-      ProgramTransformer transformer,
-      bool unsafePackageSerialization,
+      {BinaryPrinterFactory? printerFactory,
+      ProgramTransformer? transformer,
+      bool? unsafePackageSerialization,
       bool incrementalSerialization = true,
       bool useDebuggerModuleNames = false,
       bool emitDebugMetadata = false,
       bool emitDebugSymbols = false})
       : super(_outputStream,
+            printerFactory: printerFactory,
             transformer: transformer,
             unsafePackageSerialization: unsafePackageSerialization,
             incrementalSerialization: incrementalSerialization,
-            useDebuggerModuleNames: unsafePackageSerialization,
+            useDebuggerModuleNames: useDebuggerModuleNames,
             emitDebugMetadata: emitDebugMetadata,
             emitDebugSymbols: emitDebugSymbols);
 
+  /// Initialized in the constructor
+
+  final StringSink _outputStream;
+
+  /// Initialized in [compile].
+  late List<Uri> _additionalSources;
+  late bool _assumeInitializeFromDillUpToDate;
+  late CompilerOptions _compilerOptions;
+  late FileSystem _fileSystem;
+  late IncrementalCompiler _generator;
+  late String _initializeFromDill;
+  late String _kernelBinaryFilename;
+  late String _kernelBinaryFilenameIncremental;
+  late String _kernelBinaryFilenameFull;
+  late Uri _mainSource;
+  late ArgResults _options;
+  late bool _printIncrementalDependencies;
+  late ProcessedOptions _processedOptions;
+
+  /// Initialized in [compile] from options, or (re)set in [setNativeAssets].
+  Uri? _nativeAssets;
+
+  /// Cached compilation of [_nativeAssets].
+  ///
+  /// Managed by [_compileNativeAssets] and [setNativeAssets].
+  Library? _nativeAssetsLibrary;
+
+  /// Initialized in [writeJavaScriptBundle].
+  IncrementalJavaScriptBundler? _bundler;
+
+  bool? unsafePackageSerialization;
+  WidgetCache? _widgetCache;
+
   _onDiagnostic(DiagnosticMessage message) {
-    // TODO(https://dartbug.com/44867): The frontend server should take a
-    // verbosity argument and put that in CompilerOptions and use it here.
-    bool printMessage;
     switch (message.severity) {
       case Severity.error:
       case Severity.internalProblem:
-        printMessage = true;
         errors.addAll(message.plainTextFormatted);
         break;
       case Severity.warning:
-        printMessage = true;
-        break;
       case Severity.info:
-        printMessage = false;
         break;
       case Severity.context:
       case Severity.ignored:
         throw 'Unexpected severity: ${message.severity}';
     }
-    if (printMessage) {
+    if (Verbosity.shouldPrint(_compilerOptions.verbosity, message)) {
       printDiagnosticMessage(message, _outputStream.writeln);
     }
   }
@@ -104,7 +117,7 @@ class FrontendCompilerProxy extends FrontendCompiler {
   Future<bool> compile(
     String entryPoint,
     ArgResults options, {
-    IncrementalCompiler generator,
+    IncrementalCompiler? generator,
   }) async {
     _options = options;
     _fileSystem = createFrontEndFileSystem(
@@ -113,6 +126,8 @@ class FrontendCompilerProxy extends FrontendCompiler {
     _mainSource = resolveInputUri(entryPoint);
     _additionalSources =
         (options['source'] as List<String>).map(resolveInputUri).toList();
+    final nativeAssets = options['native-assets'] as String?;
+    _nativeAssets = nativeAssets != null ? resolveInputUri(nativeAssets) : null;
     _kernelBinaryFilenameFull = _options['output-dill'] ?? '$entryPoint.dill';
     _kernelBinaryFilenameIncremental = _options['output-incremental-dill'] ??
         (_options['output-dill'] != null
@@ -129,7 +144,7 @@ class FrontendCompilerProxy extends FrontendCompiler {
     final Uri sdkRoot = _ensureFolderPath(options['sdk-root']);
     final String platformKernelDill =
         options['platform'] ?? 'platform_strong.dill';
-    final String packagesOption = _options['packages'];
+    final String? packagesOption = _options['packages'];
     final bool nullSafety = _options['sound-null-safety'];
     final CompilerOptions compilerOptions = CompilerOptions()
       ..sdkRoot = sdkRoot
@@ -142,8 +157,11 @@ class FrontendCompilerProxy extends FrontendCompiler {
       ..explicitExperimentalFlags = parseExperimentalFlags(
           parseExperimentalArguments(options['enable-experiment']),
           onError: (msg) => errors.add(msg))
-      ..nnbdMode = (nullSafety == true) ? NnbdMode.Strong : NnbdMode.Weak
-      ..onDiagnostic = _onDiagnostic;
+      ..nnbdMode = (nullSafety == false) ? NnbdMode.Weak : NnbdMode.Strong
+      ..onDiagnostic = _onDiagnostic
+      ..verbosity = Verbosity.parseArgument(options['verbosity'],
+          onError: (msg) => errors.add(msg));
+    _compilerOptions = compilerOptions;
 
     if (options.wasParsed('libraries-spec')) {
       compilerOptions.librariesSpecificationUri =
@@ -185,6 +203,13 @@ class FrontendCompilerProxy extends FrontendCompiler {
       }
     }
 
+    if (options['target-os'] != null) {
+      if (!options['aot']) {
+        print('Error: --target-os option must be used with --aot');
+        return false;
+      }
+    }
+
     if (options['support-mirrors'] == true) {
       if (options['aot']) {
         print('Error: --support-mirrors option cannot be used with --aot');
@@ -204,11 +229,6 @@ class FrontendCompilerProxy extends FrontendCompiler {
       }
     }
 
-    if (nullSafety == null &&
-        compilerOptions.globalFeatures.nonNullable.isEnabled) {
-      await autoDetectNullSafetyMode(_mainSource, compilerOptions);
-    }
-
     // Initialize additional supported kernel targets.
     _installDartdevcTarget();
     compilerOptions.target = createFrontEndTarget(
@@ -217,28 +237,26 @@ class FrontendCompilerProxy extends FrontendCompiler {
       nullSafety: compilerOptions.nnbdMode == NnbdMode.Strong,
       supportMirrors: options['support-mirrors'] ??
           !(options['aot'] || options['minimal-kernel']),
-      compactAsync: options['compact-async'] ?? false /*options['aot']*/,
     );
     if (compilerOptions.target == null) {
       print('Failed to create front-end target ${options['target']}.');
       return false;
     }
 
-    final String importDill = options['import-dill'];
+    final String? importDill = options['import-dill'];
     if (importDill != null) {
       compilerOptions.additionalDills = <Uri>[
         Uri.base.resolveUri(Uri.file(importDill))
       ];
     }
 
-    _compilerOptions = compilerOptions;
     _processedOptions = ProcessedOptions(options: compilerOptions);
 
-    KernelCompilationResults results;
-    IncrementalSerializer incrementalSerializer;
+    KernelCompilationResults? results;
+    IncrementalSerializer? incrementalSerializer;
     if (options['incremental']) {
       _compilerOptions.environmentDefines =
-          _compilerOptions.target.updateEnvironmentDefines(environmentDefines);
+          _compilerOptions.target!.updateEnvironmentDefines(environmentDefines);
 
       _compilerOptions.omitPlatform = false;
       _generator = generator ?? _createGenerator(Uri.file(_initializeFromDill));
@@ -246,12 +264,16 @@ class FrontendCompilerProxy extends FrontendCompiler {
       IncrementalCompilerResult compilerResult =
           await _runWithPrintRedirection(() => _generator.compile());
       Component component = compilerResult.component;
-      results = KernelCompilationResults(
-          component,
-          const {},
-          compilerResult.classHierarchy,
-          compilerResult.coreTypes,
-          component.uriToSource.keys);
+
+      await _compileNativeAssets();
+
+      results = KernelCompilationResults.named(
+        component: component,
+        nativeAssetsLibrary: _nativeAssetsLibrary,
+        classHierarchy: compilerResult.classHierarchy,
+        coreTypes: compilerResult.coreTypes,
+        compiledSources: component.uriToSource.keys,
+      );
 
       incrementalSerializer = _generator.incrementalSerializer;
       if (options['flutter-widget-cache']) {
@@ -268,9 +290,11 @@ class FrontendCompilerProxy extends FrontendCompiler {
       results = await _runWithPrintRedirection(() => compileToKernelProxy(
           _mainSource, compilerOptions,
           additionalSources: _additionalSources,
+          nativeAssets: _nativeAssets,
           includePlatform: options['link-platform'],
           deleteToStringPackageUris: options['delete-tostring-package-uri'],
           aot: options['aot'],
+          targetOS: options['target-os'],
           useGlobalTypeFlowAnalysis: options['tfa'],
           useRapidTypeAnalysis: options['rta'],
           environmentDefines: environmentDefines,
@@ -281,27 +305,33 @@ class FrontendCompilerProxy extends FrontendCompiler {
           transformer: transformer,
           fromDillFile: options['from-dill']));
     }
-    if (results.component != null) {
-      //transformer?.transform(results.component);
+    if (results!.component != null) {
+      //transformer?.transform(results.component!);
       if (options['incremental']) {
-        transformer?.transform(results.component);
+        transformer?.transform(results.component!);
       }
 
-      if (_compilerOptions.target.name == 'dartdevc') {
-        await writeJavascriptBundle(results, _kernelBinaryFilename,
-            options['filesystem-scheme'], options['dartdevc-module-format']);
+      if (_compilerOptions.target!.name == 'dartdevc') {
+        await writeJavaScriptBundle(results, _kernelBinaryFilename,
+            options['filesystem-scheme'], options['dartdevc-module-format'],
+            fullComponent: true);
       }
-      await writeDillFile(results, _kernelBinaryFilename,
-          filterExternal: importDill != null || options['minimal-kernel'],
-          incrementalSerializer: incrementalSerializer);
+      await writeDillFile(
+        results,
+        _kernelBinaryFilename,
+        filterExternal: importDill != null || options['minimal-kernel'],
+        incrementalSerializer: incrementalSerializer,
+        aot: options['aot'],
+      );
 
       _outputStream.writeln(boundaryKey);
-      await _outputDependenciesDelta(results.compiledSources);
+      final compiledSources = results.compiledSources!;
+      await _outputDependenciesDelta(compiledSources);
       _outputStream
           .writeln('$boundaryKey $_kernelBinaryFilename ${errors.length}');
-      final String depfile = options['depfile'];
+      final String? depfile = options['depfile'];
       if (depfile != null) {
-        await writeDepfile(compilerOptions.fileSystem, results.compiledSources,
+        await writeDepfile(compilerOptions.fileSystem, compiledSources,
             _kernelBinaryFilename, depfile);
       }
 
@@ -313,14 +343,40 @@ class FrontendCompilerProxy extends FrontendCompiler {
     return errors.isEmpty;
   }
 
-  void _outputDependenciesDelta(Iterable<Uri> compiledSources) async {
+  @override
+  Future<bool> setNativeAssets(String nativeAssets) async {
+    _nativeAssetsLibrary = null; // Purge compiled cache.
+    _nativeAssets = resolveInputUri(nativeAssets);
+    return true;
+  }
+
+  /// Compiles [_nativeAssets] into [_nativeAssetsLibrary].
+  ///
+  /// [compile] and [recompileDelta] invoke this, and bundles the cached
+  /// [_nativeAssetsLibrary] in the dill file.
+  Future<void> _compileNativeAssets() async {
+    final nativeAssets = _nativeAssets;
+    if (nativeAssets == null || _nativeAssetsLibrary != null) {
+      return;
+    }
+
+    final results = await _runWithPrintRedirection(() => compileToKernel(
+          null,
+          _compilerOptions,
+          nativeAssets: _nativeAssets,
+          environmentDefines: {},
+        ));
+    _nativeAssetsLibrary = results.nativeAssetsLibrary;
+  }
+
+  Future<void> _outputDependenciesDelta(Iterable<Uri> compiledSources) async {
     if (!_printIncrementalDependencies) {
       return;
     }
-    Set<Uri> uris = Set<Uri>();
+    Set<Uri> uris = {};
     for (Uri uri in compiledSources) {
       // Skip empty or corelib dependencies.
-      if (uri == null || uri.isScheme('org-dartlang-sdk')) continue;
+      if (uri.isScheme('org-dartlang-sdk')) continue;
       uris.add(uri);
     }
     for (Uri uri in uris) {
@@ -346,17 +402,36 @@ class FrontendCompilerProxy extends FrontendCompiler {
     previouslyReportedDependencies = uris;
   }
 
-  /// Write a JavaScript bundle containg the provided component.
-  Future<void> writeJavascriptBundle(KernelCompilationResults results,
-      String filename, String fileSystemScheme, String moduleFormat) async {
+  /// Write a JavaScript bundle containing the provided component.
+  Future<void> writeJavaScriptBundle(KernelCompilationResults results,
+      String filename, String fileSystemScheme, String moduleFormat,
+      {required bool fullComponent}) async {
+    // ignore: unnecessary_null_comparison
+    assert(fullComponent != null);
     var packageConfig = await loadPackageConfigUri(
-        _compilerOptions.packagesFileUri ?? File('.packages').absolute.uri);
+        _compilerOptions.packagesFileUri ??
+            File('.dart_tool/package_config.json').absolute.uri);
     var soundNullSafety = _compilerOptions.nnbdMode == NnbdMode.Strong;
-    final Component component = results.component;
-    // Compute strongly connected components.
-    final strongComponents = StrongComponents(component,
-        results.loadedLibraries, _mainSource, _compilerOptions.fileSystem);
-    await strongComponents.computeModules();
+    final Component component = results.component!;
+
+    final bundler = _bundler ??= IncrementalJavaScriptBundler(
+      _compilerOptions.fileSystem,
+      results.loadedLibraries,
+      fileSystemScheme,
+      useDebuggerModuleNames: useDebuggerModuleNames,
+      emitDebugMetadata: emitDebugMetadata,
+      moduleFormat: moduleFormat,
+      soundNullSafety: soundNullSafety,
+    );
+    if (fullComponent) {
+      await bundler.initialize(component, _mainSource, packageConfig);
+    } else {
+      await bundler.invalidate(
+          component,
+          _generator.lastKnownGoodResult!.component,
+          _mainSource,
+          packageConfig);
+    }
 
     // Create JavaScript bundler.
     final File sourceFile = File('$filename.sources');
@@ -367,23 +442,17 @@ class FrontendCompilerProxy extends FrontendCompiler {
     if (!sourceFile.parent.existsSync()) {
       sourceFile.parent.createSync(recursive: true);
     }
-    _bundler = JavaScriptBundler(
-        component, strongComponents, fileSystemScheme, packageConfig,
-        useDebuggerModuleNames: useDebuggerModuleNames,
-        emitDebugMetadata: emitDebugMetadata,
-        emitDebugSymbols: emitDebugSymbols,
-        moduleFormat: moduleFormat,
-        soundNullSafety: soundNullSafety);
+
     final sourceFileSink = sourceFile.openWrite();
     final manifestFileSink = manifestFile.openWrite();
     final sourceMapsFileSink = sourceMapsFile.openWrite();
     final metadataFileSink =
         emitDebugMetadata ? metadataFile.openWrite() : null;
     final symbolsFileSink = emitDebugSymbols ? symbolsFile.openWrite() : null;
-    final kernel2JsCompilers = await _bundler.compile(
-        results.classHierarchy,
-        results.coreTypes,
-        results.loadedLibraries,
+    final kernel2JsCompilers = await bundler.compile(
+        results.classHierarchy!,
+        results.coreTypes!,
+        packageConfig,
         sourceFileSink,
         manifestFileSink,
         sourceMapsFileSink,
@@ -399,11 +468,26 @@ class FrontendCompilerProxy extends FrontendCompiler {
     ]);
   }
 
-  writeDillFile(KernelCompilationResults results, String filename,
-      {bool filterExternal: false,
-      IncrementalSerializer incrementalSerializer}) async {
-    final Component component = results.component;
+  writeDillFile(
+    KernelCompilationResults results,
+    String filename, {
+    bool filterExternal = false,
+    IncrementalSerializer? incrementalSerializer,
+    bool aot = false,
+  }) async {
+    final Component component = results.component!;
+    final Library? nativeAssetsLibrary = results.nativeAssetsLibrary;
+
+    if (aot && nativeAssetsLibrary != null) {
+      // If Dart component in AOT, write the vm:native-assets library _inside_
+      // the Dart component.
+      // TODO(https://dartbug.com/50152): Support AOT dill concatenation.
+      component.libraries.add(nativeAssetsLibrary);
+      nativeAssetsLibrary.parent = component;
+    }
+
     final IOSink sink = File(filename).openWrite();
+
     final Set<Library> loadedLibraries = results.loadedLibraries;
     final BinaryPrinter printer = filterExternal
         ? BinaryPrinter(sink,
@@ -421,6 +505,14 @@ class FrontendCompilerProxy extends FrontendCompiler {
     }
 
     printer.writeComponentFile(component);
+
+    if (nativeAssetsLibrary != null && !aot) {
+      final BinaryPrinter printer = BinaryPrinter(sink);
+      printer.writeComponentFile(Component(
+        libraries: [nativeAssetsLibrary],
+        mode: nativeAssetsLibrary.nonNullableByDefaultCompiledMode,
+      ));
+    }
     await sink.close();
 
     if (_options['split-output-by-packages']) {
@@ -428,26 +520,26 @@ class FrontendCompilerProxy extends FrontendCompiler {
           _mainSource, _compilerOptions, results, filename);
     }
 
-    final String manifestFilename = _options['far-manifest'];
+    final String? manifestFilename = _options['far-manifest'];
     if (manifestFilename != null) {
       final String output = _options['output-dill'];
-      final String dataDir = _options.options.contains('component-name')
+      final String? dataDir = _options.options.contains('component-name')
           ? _options['component-name']
           : _options['data-dir'];
       await createFarManifest(output, dataDir, manifestFilename);
     }
   }
 
-  Future<Null> invalidateIfInitializingFromDill() async {
-    if (_assumeInitializeFromDillUpToDate) return null;
-    if (_kernelBinaryFilename != _kernelBinaryFilenameFull) return null;
+  Future<void> invalidateIfInitializingFromDill() async {
+    if (_assumeInitializeFromDillUpToDate) return;
+    if (_kernelBinaryFilename != _kernelBinaryFilenameFull) return;
     // If the generator is initialized, it's not going to initialize from dill
     // again anyway, so there's no reason to spend time invalidating what should
     // be invalidated by the normal approach anyway.
-    if (_generator.initialized) return null;
+    if (_generator.initialized) return;
 
     final File f = File(_initializeFromDill);
-    if (!f.existsSync()) return null;
+    if (!f.existsSync()) return;
 
     Component component;
     try {
@@ -455,14 +547,14 @@ class FrontendCompilerProxy extends FrontendCompiler {
     } catch (e) {
       // If we cannot load the dill file we shouldn't initialize from it.
       _generator = _createGenerator(null);
-      return null;
+      return;
     }
 
     nextUri:
     for (Uri uri in component.uriToSource.keys) {
-      if (uri == null || '$uri' == '') continue nextUri;
+      if ('$uri' == '') continue nextUri;
 
-      final List<int> oldBytes = component.uriToSource[uri].source;
+      final List<int> oldBytes = component.uriToSource[uri]!.source;
       FileSystemEntity entity;
       try {
         entity = _compilerOptions.fileSystem.entityForUri(uri);
@@ -497,7 +589,7 @@ class FrontendCompilerProxy extends FrontendCompiler {
   }
 
   @override
-  Future<Null> recompileDelta({String entryPoint}) async {
+  Future<void> recompileDelta({String? entryPoint}) async {
     final String boundaryKey = Uuid().generateV4();
     _outputStream.writeln('result $boundaryKey');
     await invalidateIfInitializingFromDill();
@@ -509,20 +601,22 @@ class FrontendCompilerProxy extends FrontendCompiler {
     IncrementalCompilerResult deltaProgramResult = await _generator
         .compile(entryPoints: [_mainSource, ..._additionalSources]);
     Component deltaProgram = deltaProgramResult.component;
-    if (deltaProgram != null && transformer != null) {
-      transformer.transform(deltaProgram);
-    }
+    transformer?.transform(deltaProgram);
 
-    KernelCompilationResults results = KernelCompilationResults(
-        deltaProgram,
-        const {},
-        deltaProgramResult.classHierarchy,
-        deltaProgramResult.coreTypes,
-        deltaProgram.uriToSource.keys);
+    await _compileNativeAssets();
 
-    if (_compilerOptions.target.name == 'dartdevc') {
-      await writeJavascriptBundle(results, _kernelBinaryFilename,
-          _options['filesystem-scheme'], _options['dartdevc-module-format']);
+    KernelCompilationResults results = KernelCompilationResults.named(
+      component: deltaProgram,
+      classHierarchy: deltaProgramResult.classHierarchy,
+      coreTypes: deltaProgramResult.coreTypes,
+      compiledSources: deltaProgram.uriToSource.keys,
+      nativeAssetsLibrary: _nativeAssetsLibrary,
+    );
+
+    if (_compilerOptions.target!.name == 'dartdevc') {
+      await writeJavaScriptBundle(results, _kernelBinaryFilename,
+          _options['filesystem-scheme'], _options['dartdevc-module-format'],
+          fullComponent: false);
     } else {
       await writeDillFile(results, _kernelBinaryFilename,
           incrementalSerializer: _generator.incrementalSerializer);
@@ -530,14 +624,14 @@ class FrontendCompilerProxy extends FrontendCompiler {
     _updateWidgetCache(deltaProgram);
 
     _outputStream.writeln(boundaryKey);
-    await _outputDependenciesDelta(results.compiledSources);
+    await _outputDependenciesDelta(results.compiledSources!);
     _outputStream
         .writeln('$boundaryKey $_kernelBinaryFilename ${errors.length}');
     _kernelBinaryFilename = _kernelBinaryFilenameIncremental;
   }
 
   @override
-  Future<Null> compileExpression(
+  Future<void> compileExpression(
       String expression,
       List<String> definitions,
       List<String> definitionTypes,
@@ -545,12 +639,12 @@ class FrontendCompilerProxy extends FrontendCompiler {
       List<String> typeBounds,
       List<String> typeDefaults,
       String libraryUri,
-      String klass,
-      String method,
+      String? klass,
+      String? method,
       bool isStatic) async {
     final String boundaryKey = Uuid().generateV4();
     _outputStream.writeln('result $boundaryKey');
-    Procedure procedure = await _generator.compileExpression(
+    Procedure? procedure = await _generator.compileExpression(
         expression,
         definitions,
         definitionTypes,
@@ -576,12 +670,12 @@ class FrontendCompilerProxy extends FrontendCompiler {
 
   /// Program compilers per module.
   ///
-  /// Produced suring initial compilation of the module to JavaScript,
+  /// Produced during initial compilation of the module to JavaScript,
   /// cached to be used for expression compilation in [compileExpressionToJs].
   final Map<String, ProgramCompiler> cachedProgramCompilers = {};
 
   @override
-  Future<Null> compileExpressionToJs(
+  Future<void> compileExpressionToJs(
       String libraryUri,
       int line,
       int column,
@@ -607,18 +701,18 @@ class FrontendCompilerProxy extends FrontendCompiler {
     _processedOptions.ticker
         .logMs('Compiling expression to JavaScript in $moduleName');
 
-    final kernel2jsCompiler = cachedProgramCompilers[moduleName];
-    IncrementalCompilerResult compilerResult = _generator.lastKnownGoodResult;
+    final kernel2jsCompiler = cachedProgramCompilers[moduleName]!;
+    IncrementalCompilerResult compilerResult = _generator.lastKnownGoodResult!;
     Component component = compilerResult.component;
     component.computeCanonicalNames();
 
     _processedOptions.ticker.logMs('Computed component');
 
-    final expressionCompiler = new ExpressionCompiler(
+    final expressionCompiler = ExpressionCompiler(
       _compilerOptions,
       parseModuleFormat(_options['dartdevc-module-format'] as String),
       errors,
-      _generator.generator,
+      _generator.generator as ddc.IncrementalCompiler,
       kernel2jsCompiler,
       component,
     );
@@ -626,7 +720,7 @@ class FrontendCompilerProxy extends FrontendCompiler {
     final procedure = await expressionCompiler.compileExpressionToJs(
         libraryUri, line, column, jsFrameValues, expression);
 
-    final result = errors.length > 0 ? errors[0] : procedure;
+    final result = errors.isNotEmpty ? errors[0] : procedure!;
 
     // TODO(annagrin): kernelBinaryFilename is too specific
     // rename to _outputFileName?
@@ -656,7 +750,7 @@ class FrontendCompilerProxy extends FrontendCompiler {
   /// Map of already serialized dill data. All uris in a serialized component
   /// maps to the same blob of data. Used by
   /// [writePackagesToSinkAndTrimComponent].
-  Map<Uri, List<int>> cachedPackageLibraries = Map<Uri, List<int>>();
+  Map<Uri, List<int>> cachedPackageLibraries = <Uri, List<int>>{};
 
   /// Map of dependencies for already serialized dill data.
   /// E.g. if blob1 dependents on blob2, but only using a single file from blob1
@@ -664,12 +758,10 @@ class FrontendCompilerProxy extends FrontendCompiler {
   /// dill file in a weird state that could cause the VM to crash if asked to
   /// forcefully compile everything. Used by
   /// [writePackagesToSinkAndTrimComponent].
-  Map<Uri, List<Uri>> cachedPackageDependencies = Map<Uri, List<Uri>>();
+  Map<Uri, List<Uri>> cachedPackageDependencies = <Uri, List<Uri>>{};
 
   writePackagesToSinkAndTrimComponent(
       Component deltaProgram, Sink<List<int>> ioSink) {
-    if (deltaProgram == null) return;
-
     List<Library> packageLibraries = <Library>[];
     List<Library> libraries = <Library>[];
     deltaProgram.computeCanonicalNames();
@@ -686,32 +778,31 @@ class FrontendCompilerProxy extends FrontendCompiler {
       ..clear()
       ..addAll(libraries);
 
-    Map<String, List<Library>> newPackages = Map<String, List<Library>>();
-    Set<List<int>> alreadyAdded = Set<List<int>>();
+    Map<String, List<Library>> newPackages = <String, List<Library>>{};
+    Set<List<int>> alreadyAdded = <List<int>>{};
 
     addDataAndDependentData(List<int> data, Uri uri) {
       if (alreadyAdded.add(data)) {
         ioSink.add(data);
         // Now also add all dependencies.
-        for (Uri dep in cachedPackageDependencies[uri]) {
-          addDataAndDependentData(cachedPackageLibraries[dep], dep);
+        for (Uri dep in cachedPackageDependencies[uri]!) {
+          addDataAndDependentData(cachedPackageLibraries[dep]!, dep);
         }
       }
     }
 
     for (Library lib in packageLibraries) {
-      List<int> data = cachedPackageLibraries[lib.fileUri];
+      List<int>? data = cachedPackageLibraries[lib.fileUri];
       if (data != null) {
         addDataAndDependentData(data, lib.fileUri);
       } else {
         String package = lib.importUri.pathSegments.first;
-        newPackages[package] ??= <Library>[];
-        newPackages[package].add(lib);
+        (newPackages[package] ??= <Library>[]).add(lib);
       }
     }
 
     for (String package in newPackages.keys) {
-      List<Library> libraries = newPackages[package];
+      List<Library> libraries = newPackages[package]!;
       Component singleLibrary = Component(
           libraries: libraries,
           uriToSource: deltaProgram.uriToSource,
@@ -722,11 +813,11 @@ class FrontendCompilerProxy extends FrontendCompiler {
       printer.writeComponentFile(singleLibrary);
 
       // Record things this package blob dependent on.
-      Set<Uri> libraryUris = Set<Uri>();
+      Set<Uri> libraryUris = <Uri>{};
       for (Library lib in libraries) {
         libraryUris.add(lib.fileUri);
       }
-      Set<Uri> deps = Set<Uri>();
+      Set<Uri> deps = <Uri>{};
       for (Library lib in libraries) {
         for (LibraryDependency dep in lib.dependencies) {
           Library dependencyLibrary = dep.importedLibraryReference.asLibrary;
@@ -774,7 +865,7 @@ class FrontendCompilerProxy extends FrontendCompiler {
     _kernelBinaryFilename = _kernelBinaryFilenameFull;
   }
 
-  IncrementalCompiler _createGenerator(Uri initializeFromDillUri) {
+  IncrementalCompiler _createGenerator(Uri? initializeFromDillUri) {
     return IncrementalCompiler(
         _compilerOptions, [_mainSource, ..._additionalSources],
         initializeFromDillUri: initializeFromDillUri,
@@ -792,8 +883,8 @@ class FrontendCompilerProxy extends FrontendCompiler {
     if (_widgetCache == null || _generator.fullComponent) {
       return;
     }
-    final String singleModifiedClassName =
-        _widgetCache.checkSingleWidgetTypeModified(
+    final String? singleModifiedClassName =
+        _widgetCache!.checkSingleWidgetTypeModified(
       _generator.lastKnownGoodResult?.component,
       partialComponent,
       _generator.lastKnownGoodResult?.classHierarchy,
@@ -816,7 +907,7 @@ class FrontendCompilerProxy extends FrontendCompiler {
 
   /// Runs the given function [f] in a Zone that redirects all prints into
   /// [_outputStream].
-  Future<T> _runWithPrintRedirection<T>(Future<T> f()) {
+  Future<T> _runWithPrintRedirection<T>(Future<T> Function() f) {
     return runZoned(() => Future<T>(f),
         zoneSpecification: ZoneSpecification(
             print: (Zone self, ZoneDelegate parent, Zone zone, String line) =>

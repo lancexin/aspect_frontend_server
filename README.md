@@ -16,9 +16,9 @@
 
 
 # 编译方式
-dart --deterministic --no-sound-null-safety --snapshot=frontend_server.dart.snapshot --snapshot-kind=kernel bin/starter.dart
+dart --deterministic --snapshot=frontend_server.dart.snapshot --snapshot-kind=kernel bin/starter.dart
 
-dart --deterministic --no-sound-null-safety --snapshot=dump_kernel.dart.snapshot --snapshot-kind=kernel bin/dump_kernel.dart
+dart --deterministic --snapshot=dump_kernel.dart.snapshot --snapshot-kind=kernel bin/dump_kernel.dart
 
 # 测试编译
 1. 生成kernel_snapshot.d,先用普通方法run一下example,在example/.dart_tool/flutter_build下面会有生成编译临时的文件

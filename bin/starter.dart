@@ -5,6 +5,8 @@ import 'package:args/args.dart';
 import 'package:aspect_frontend_server/aspect_frontend_server.dart';
 
 import 'package:frontend_server/frontend_server.dart' as frontend;
+import 'package:frontend_server/starter.dart';
+
 import 'package:aspect_frontend_server/proxy/frontend_server_proxy.dart';
 
 Future<void> main(List<String> args) async {
@@ -19,7 +21,7 @@ Future<void> main(List<String> args) async {
         useDebuggerModuleNames: options['debugger-module-names'],
         emitDebugMetadata: options['experimental-emit-debug-metadata'],
         emitDebugSymbols: options['emit-debug-symbols']);
-    final int exitCode = await frontend.starter(args, compiler: compiler);
+    final int exitCode = await starter(args, compiler: compiler);
     if (exitCode != 0) {
       exit(exitCode);
     }
