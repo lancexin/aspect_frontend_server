@@ -17,7 +17,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
@@ -33,12 +33,8 @@ class Inject {
     "isRegex": false
   })
   //必须是static,不然不起作用
-  static Future<bool> _injectTest2(
-      Object target,
-      String functionName,
-      List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
-      Function proceed) {
+  static dynamic _injectTest2(
+      target, functionName, positionalParams, namedParams, proceed) {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
     return Function.apply(
@@ -58,7 +54,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
@@ -79,7 +75,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
@@ -102,7 +98,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
@@ -112,6 +108,7 @@ class Inject {
     return success;
   }
 
+  //必须是static,不然不起作用
   //非类中的方法拦截
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {
@@ -120,19 +117,18 @@ class Inject {
     "methodName": "-DialogExt|showNotice",
     "isRegex": false
   })
-  //必须是static,不然不起作用
-  static Future<bool> _injectShowNotice(
+  @pragma('vm:entry-point')
+  static dynamic injectShowNotice(
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
-      Function proceed) async {
+      Map<dynamic, dynamic> namedParams,
+      Function proceed) {
     debugPrint(
         "[Inject] $functionName start ${namedParams["title"]} ${namedParams["message"]}");
-    bool success = await Function.apply(
+
+    return Function.apply(
         proceed, positionalParams, _transToNamedParams(namedParams));
-    debugPrint("[Inject] $functionName result $success");
-    return success;
   }
 
   // //全局catch拦截
@@ -166,7 +162,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0].runtimeType.toString()} ${positionalParams[1]} ${positionalParams[2]} ${namedParams["key3"]}");
@@ -188,10 +184,10 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) {
     PointerEvent event = positionalParams[0];
-    debugPrint('dispatchEvent - start ${event.kind.name}');
+    //debugPrint('dispatchEvent - start ${event.kind.name}');
     return Function.apply(
         proceed, positionalParams, _transToNamedParams(namedParams));
   }
@@ -209,7 +205,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
@@ -228,7 +224,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
@@ -247,7 +243,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint("[Inject] $functionName start: ${namedParams["packageName"]}");
     int result = await Function.apply(
@@ -268,7 +264,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint("[Inject] $functionName start: ${namedParams["packageName"]}");
     int result = await Function.apply(
@@ -289,7 +285,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint(
         "[Inject] _injectGetAppVersion22 start: ${namedParams["packageName"]}");
@@ -311,7 +307,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint("[Inject] testMixin start");
 
@@ -331,7 +327,7 @@ class Inject {
       Object target,
       String functionName,
       List<dynamic> positionalParams,
-      Map<String, dynamic> namedParams,
+      Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint(
         "[Inject] baseTest start: ${target.runtimeType.toString()} $functionName ");
@@ -342,7 +338,7 @@ class Inject {
 
   @pragma('vm:entry-point')
   static Map<Symbol, dynamic> _transToNamedParams(
-      Map<String, dynamic> namedParams) {
+      Map<dynamic, dynamic> namedParams) {
     Map<Symbol, dynamic> maps = {};
     namedParams.forEach((key, value) {
       maps[Symbol(key)] = value;

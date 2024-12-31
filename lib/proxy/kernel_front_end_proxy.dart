@@ -17,27 +17,17 @@ import 'package:vm/native_assets/synthesizer.dart';
 import 'package:vm/transformations/to_string_transformer.dart'
     as to_string_transformer;
 
+import 'package:front_end/src/api_prototype/macros.dart' as macros
+    show isMacroLibraryUri;
+
 //inject package:vm/kernel_front_end.dart method compileToKernel add ProgramTransformer
 Future<KernelCompilationResults> compileToKernelProxy(
-  Uri? source,
-  CompilerOptions options, {
-  List<Uri> additionalSources = const <Uri>[],
-  Uri? nativeAssets,
-  bool includePlatform = false,
-  List<String> deleteToStringPackageUris = const <String>[],
-  bool aot = false,
-  bool useGlobalTypeFlowAnalysis = false,
-  bool useRapidTypeAnalysis = true,
-  required Map<String, String> environmentDefines,
-  bool enableAsserts = true,
-  bool useProtobufTreeShakerV2 = false,
-  bool minimalKernel = false,
-  bool treeShakeWriteOnlyFields = false,
-  String? targetOS = null,
-  String? fromDillFile = null,
+  KernelCompilationArguments args,
   //inject here
   ProgramTransformer? transformer,
-}) async {
+) async {
+  final options = args.options!;
+
   // Replace error handler to detect if there are compilation errors.
   final errorDetector =
       new ErrorDetector(previousErrorHandler: options.onDiagnostic);
@@ -45,13 +35,8 @@ Future<KernelCompilationResults> compileToKernelProxy(
 
   final nativeAssetsLibrary =
       await NativeAssetsSynthesizer.synthesizeLibraryFromYamlFile(
-    nativeAssets,
-    errorDetector,
-    nonNullableByDefaultCompiledMode: options.nnbdMode == NnbdMode.Strong
-        ? NonNullableByDefaultCompiledMode.Strong
-        : NonNullableByDefaultCompiledMode.Weak,
-  );
-  if (source == null) {
+          args.nativeAssets, errorDetector);
+  if (args.source == null) {
     return KernelCompilationResults.named(
       nativeAssetsLibrary: nativeAssetsLibrary,
     );
@@ -59,45 +44,43 @@ Future<KernelCompilationResults> compileToKernelProxy(
 
   final target = options.target!;
   options.environmentDefines =
-      target.updateEnvironmentDefines(environmentDefines);
+      target.updateEnvironmentDefines(args.environmentDefines);
 
   CompilerResult? compilerResult;
+  final fromDillFile = args.fromDillFile;
   if (fromDillFile != null) {
     compilerResult =
         await loadKernel(options.fileSystem, resolveInputUri(fromDillFile));
   } else {
-    compilerResult = await kernelForProgram(source, options,
-        additionalSources: additionalSources);
+    compilerResult = await kernelForProgram(args.source!, options,
+        additionalSources: args.additionalSources);
   }
   final Component? component = compilerResult?.component;
-  Iterable<Uri>? compiledSources = component?.uriToSource.keys;
+  //inject here
+  if (component != null) {
+    print("start inject here");
+    transformer?.transform(component);
+    print("end inject here");
+  }
+
+  // TODO(https://dartbug.com/55246): track macro deps when available.
+  Iterable<Uri>? compiledSources = component?.uriToSource.keys
+      .where((uri) => !macros.isMacroLibraryUri(uri));
 
   Set<Library> loadedLibraries = createLoadedLibrariesSet(
       compilerResult?.loadedComponents, compilerResult?.sdkComponent,
-      includePlatform: includePlatform);
+      includePlatform: args.includePlatform);
 
-  if (deleteToStringPackageUris.isNotEmpty && component != null) {
+  if (args.deleteToStringPackageUris.isNotEmpty && component != null) {
     to_string_transformer.transformComponent(
-        component, deleteToStringPackageUris);
-  }
-
-  //inject here
-  if (component != null) {
-    transformer?.transform(component);
+        component, args.deleteToStringPackageUris);
   }
 
   // Run global transformations only if component is correct.
-  if ((aot || minimalKernel) && component != null) {
-    await runGlobalTransformations(target, component, useGlobalTypeFlowAnalysis,
-        enableAsserts, useProtobufTreeShakerV2, errorDetector,
-        environmentDefines: options.environmentDefines,
-        nnbdMode: options.nnbdMode,
-        targetOS: targetOS,
-        minimalKernel: minimalKernel,
-        treeShakeWriteOnlyFields: treeShakeWriteOnlyFields,
-        useRapidTypeAnalysis: useRapidTypeAnalysis);
+  if ((args.aot || args.minimalKernel) && component != null) {
+    await runGlobalTransformations(target, component, errorDetector, args);
 
-    if (minimalKernel) {
+    if (args.minimalKernel) {
       // compiledSources is component.uriToSource.keys.
       // Make a copy of compiledSources to detach it from
       // component.uriToSource which is cleared below.

@@ -1,7 +1,8 @@
 // ignore_for_file: import_of_legacy_library_into_null_safe, unused_import
 
+import 'dart:io';
+
 import 'package:frontend_server/frontend_server.dart' as frontend;
-import 'package:vm/target/flutter.dart';
 
 import 'package:kernel/ast.dart';
 import 'utils.dart';
@@ -35,16 +36,16 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
 
   @override
   void transform(Component component) {
-    print("[MethodAopTransformer] start transform");
+    stdout.writeln("[MethodAopTransformer] start transform");
     _aopItemList.clear();
     manipulatedProcedureSet.clear();
     _collectAopItem(component);
 
     if (_aopItemList.isNotEmpty) {
-      print("[MethodAopTransformer] start visitChildren");
+      stdout.writeln("[MethodAopTransformer] start visitChildren");
       component.visitChildren(_MethodExecuteVisitor(_aopItemList));
     } else {
-      print("[MethodAopTransformer] skip visitChildren");
+      stdout.writeln("[MethodAopTransformer] skip visitChildren");
     }
   }
 
@@ -52,7 +53,7 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
     final List<Library> libraries = program.libraries;
 
     if (libraries.isEmpty) {
-      print(
+      stdout.writeln(
           "[MethodAopTransformer] _collectAopItem  libraries.isEmpty so return");
       return;
     }
@@ -65,7 +66,7 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
       classes.forEach((cls) {
         bool aspectdEnabled = AopUtils.isClassEnableAspect(cls);
         if (aspectdEnabled) {
-          print("[MethodAopTransformer] ${cls.name} aspectdEnabled");
+          stdout.writeln("[MethodAopTransformer] ${cls.name} aspectdEnabled");
           cls.members.forEach((member) {
             final MethodItem? aopItem = processMethodItemMember(member);
             if (aopItem != null) {
@@ -199,7 +200,7 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
   }
 }
 
-class _MethodExecuteVisitor extends RecursiveVisitor<void> {
+class _MethodExecuteVisitor extends RecursiveVisitor {
   final List<MethodItem> _aopItemList;
 
   _MethodExecuteVisitor(this._aopItemList);
@@ -221,7 +222,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
             node.implementedTypes.first.classNode.enclosingLibrary;
         clsName = node.implementedTypes.first.classNode.name;
       }
-      //print(
+      //stdout.writeln(
       //    "[MethodAopTransformer] visitClass isAnonymousMixin ${node.name} ${originalLibrary.importUri.toString()}}");
     }
     bool matches = false;
@@ -238,7 +239,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     }
 
     if (matches) {
-      print(
+      stdout.writeln(
           "[MethodAopTransformer] visitClass match ${originalLibrary.importUri} ${node.name}");
       node.visitChildren(this);
     }
@@ -260,7 +261,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
       }
     }
     if (matches) {
-      print(
+      stdout.writeln(
           "[MethodAopTransformer] visitExtension extension match ${node.parent.runtimeType.toString()} ${node.name}");
       node.visitChildren(this);
     }
@@ -294,7 +295,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
         importUri = originalClass
             .implementedTypes.first.classNode.enclosingLibrary.importUri
             .toString();
-        //print(
+        //stdout.writeln(
         //    "[MethodAopTransformer] visitProcedure isAnonymousMixin so transform it clasName[${originalClass.name} to $clsName] importUri[${originalLibrary?.importUri.toString()} to $importUri]");
       }
     }
@@ -324,14 +325,14 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     if (matchedAopItem == null) {
       if ((originalClass?.isAnonymousMixin ?? false) &&
           (originalClass?.isEliminatedMixin ?? false)) {
-        //print(
+        //stdout.writeln(
         //    "[MethodAopTransformer] visitProcedure isAnonymousMixin so transform it clasName[${originalClass?.name} to $clsName] importUri[${originalLibrary?.importUri.toString()} to $importUri]");
-        //print(
+        //stdout.writeln(
         //    "[MethodAopTransformer] visitProcedure notMatch ${originalLibrary?.importUri.toString()}|${originalClass?.name}|$procedureName");
       }
       return;
     } else {
-      print(
+      stdout.writeln(
           "[MethodAopTransformer] visitProcedure match ${originalLibrary?.importUri.toString()}|${originalClass?.name}|$procedureName");
     }
 
@@ -344,7 +345,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
           transformInstanceMethodProcedure(
               node.parent?.parent as Library, matchedAopItem, node);
         } else {
-          print(
+          stdout.writeln(
               "[MethodAopTransformer] visitProcedure error ${node.parent.runtimeType.toString()} ${node.name.text}");
         }
       } else {
@@ -352,12 +353,12 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
           transformInstanceMethodProcedure(
               node.parent?.parent as Library, matchedAopItem, node);
         } else {
-          print(
+          stdout.writeln(
               "[MethodAopTransformer] visitProcedure error node.parent == null ${node.name.text}");
         }
       }
     } catch (error, stack) {
-      print(
+      stdout.writeln(
           "[MethodAopTransformer] visitProcedure ${error.toString()} \n ${stack.toString()}");
     }
   }
@@ -381,7 +382,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
 
     if (expression is StaticInvocation) {
       if (expression.arguments.positional.length != 5) {
-        print(
+        stdout.writeln(
             "[MethodAopTransformer] arguments is not 5 so return ${expression.arguments.positional.length}");
         return false;
       }
@@ -397,7 +398,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
       }
       return false;
     } else {
-      print(
+      stdout.writeln(
           "[MethodAopTransformer] expression is not StaticInvocation so return ");
       return false;
     }
@@ -421,7 +422,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
 
   //   if (expression is StaticInvocation) {
   //     if (expression.arguments.positional.length != 5) {
-  //       print(
+  //       stdout.writeln(
   //           "[MethodAopTransformer] arguments is not 5 so return ${expression.arguments.positional.length}");
   //       return block;
   //     }
@@ -440,7 +441,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
   //     }
   //     return block;
   //   } else {
-  //     print(
+  //     stdout.writeln(
   //         "[MethodAopTransformer] expression is not StaticInvocation so return ");
   //     return block;
   //   }
@@ -460,7 +461,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     //当前方法的处理逻辑
     Block? bodyStatements = functionNode.body as Block?;
     if (bodyStatements == null) {
-      print(
+      stdout.writeln(
           "[MethodAopTransformer] bodyStatements ${originalProcedure.name.toString()} is null so return");
       return;
     }
@@ -468,7 +469,7 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
     //检查当前方法是否已经被注入
     if (isInjectBlock(
         bodyStatements, aopItem.aopMember as Procedure, originalProcedure)) {
-      print(
+      stdout.writeln(
           "[MethodAopTransformer] isInjectBlock1 ${originalProcedure.name.toString()} so return");
       return;
     }
@@ -488,7 +489,18 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
 
     //target
     if (originalProcedure.isStatic) {
-      redirectArguments.positional.add(StringLiteral(functionName));
+      //这里需要适配 release 和 debug 模式
+      // if (originalProcedure.isExtensionMember &&
+      //     originArguments.positional.isNotEmpty) {
+      //   Expression first = originArguments.positional.first;
+      //   stdout.writeln(
+      //       "isExtensionMember ${first.runtimeType} ${first.toStringInternal()}");
+      //   redirectArguments.positional.add(originArguments.positional.first);
+      //   //originArguments.positional.removeAt(0);
+      // } else {
+
+      // }
+      redirectArguments.positional.add(NullLiteral());
     } else {
       redirectArguments.positional.add(ThisExpression());
     }
@@ -516,7 +528,8 @@ class _MethodExecuteVisitor extends RecursiveVisitor<void> {
             ? AopUtils.deepCopyASTNode(functionNode.returnType)
             : const VoidType(),
         asyncMarker: functionNode.asyncMarker,
-        dartAsyncMarker: functionNode.dartAsyncMarker);
+        dartAsyncMarker: functionNode.dartAsyncMarker,
+        emittedValueType: functionNode.emittedValueType);
     FunctionExpression newFunctionExpression =
         FunctionExpression(newFunctionNode);
     redirectArguments.positional.add(newFunctionExpression);

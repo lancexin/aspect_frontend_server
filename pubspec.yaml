@@ -4,51 +4,75 @@ version: 1.0.0
 # homepage: https://www.example.com
 
 environment:
-  sdk: '>=2.18.6 <4.0.0'
+  sdk: ^3.3.0
 
 dependencies:
-  front_end: any
   _fe_analyzer_shared: any
-  _js_interop_checks: any
-  frontend_server: any
-  build_integration: any
-  js_shared: any
-  js_runtime: any
-  js_ast: any
-  compiler: any
-  dev_compiler: any
-  meta: any
-  args: any
-  vm: any
   kernel: any
-  dart2js_info: any
+  macros: any
+  package_config: any
+  vm: any
+  frontend_server: any
+
+dev_dependencies:
+  analyzer: any
+  args: any
+  async_helper: any
+  build_integration: any
+  compiler: any
+  dart_style: any
+  dart2wasm: any
+  dev_compiler: any
+  expect: any
+  json_rpc_2: any
+  path: any
+  test_reflective_loader: any
+  test: any
+  testing: any
+  vm_service: any
+  web_socket_channel: any
+  yaml: any
 
 dependency_overrides:
   _fe_analyzer_shared:
     path: ../dart_sdk/sdk/pkg/_fe_analyzer_shared
   _js_interop_checks:
     path: ../dart_sdk/sdk/pkg/_js_interop_checks
-  front_end:
-    path: ../dart_sdk/sdk/pkg/front_end
+  async_helper:
+    path: ../dart_sdk/sdk/pkg/async_helper
   build_integration:
     path: ../dart_sdk/sdk/pkg/build_integration
-  frontend_server:
-    path: ../dart_sdk/sdk/pkg/frontend_server
   compiler:
     path: ../dart_sdk/sdk/pkg/compiler
+  dart2js_info:
+    path: ../dart_sdk/sdk/pkg/dart2js_info
+  dart2wasm:
+    path: ../dart_sdk/sdk/pkg/dart2wasm
   dev_compiler:
     path: ../dart_sdk/sdk/pkg/dev_compiler
-  js_shared:
-    path: ../dart_sdk/sdk/pkg/js_shared
-  js_runtime:
-    path: ../dart_sdk/sdk/pkg/js_runtime
+  expect:
+    path: ../dart_sdk/sdk/pkg/expect
   js_ast:
     path: ../dart_sdk/sdk/pkg/js_ast
-  meta:
-    path: ../dart_sdk/sdk/pkg/meta
-  vm:
-    path: ../dart_sdk/sdk/pkg/vm
+  js_runtime:
+    path: ../dart_sdk/sdk/pkg/js_runtime
+  js_shared:
+    path: ../dart_sdk/sdk/pkg/js_shared
   kernel:
     path: ../dart_sdk/sdk/pkg/kernel
-  dart2js_info: 
-    path: ../dart_sdk/sdk/pkg/dart2js_info
+  mmap:
+    path: ../dart_sdk/sdk/pkg/mmap
+  smith:
+    path: ../dart_sdk/sdk/pkg/smith
+  testing:
+    path: ../dart_sdk/sdk/pkg/testing
+  vm:
+    path: ../dart_sdk/sdk/pkg/vm
+  wasm_builder:
+    path: ../dart_sdk/sdk/pkg/wasm_builder
+  frontend_server:
+    path: ../dart_sdk/sdk/pkg/frontend_server
+  front_end: 
+    path: ../dart_sdk/sdk/pkg/front_end
+  macros: 
+    path: ../dart_sdk/sdk/pkg/macros

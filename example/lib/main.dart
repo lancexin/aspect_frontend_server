@@ -12,7 +12,7 @@ void main() {
 int total = 0;
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -51,7 +51,7 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 Future<bool> _test4(int key1, String key2, {String key3 = 'namedkey4'}) async {
@@ -93,7 +93,7 @@ extension DialogExt on GetInterface {
   }
 }
 
-extension ExtensionHomePageState on MyHomePageState {
+extension ExtensionHomePageState on _MyHomePageState {
   Future<bool> _test5(int key1, String key2,
       {String key3 = 'namedkey5'}) async {
     total++;
@@ -143,7 +143,7 @@ class RepositoryImpl extends BaseRepository {
   }
 }
 
-class MyHomePageState extends State<MyHomePage>
+class _MyHomePageState extends State<MyHomePage>
     with Test6Mixin, MixinHomePageState2 {
   int _counter = 0;
 
@@ -154,33 +154,33 @@ class MyHomePageState extends State<MyHomePage>
     debugPrint("$total _test1 $key1 $key2 $key3");
   }
 
-  Future<bool> _test2(int key1, String key2,
-      {String key3 = 'namedkey2'}) async {
+  bool _test2(int key1, String key2, {String key3 = 'namedkey2'}) {
     total++;
     debugPrint("$total _test2 $key1 $key2 $key3");
     return true;
   }
 
   static Future<bool> _test3(int key1, String key2,
-      {String key3 = 'namedkey3'}) async {
+      {String key3 = 'namedkey3'}) {
     total++;
     debugPrint("$total _test3 $key1 $key2 $key3");
-    return true;
+    return Future.value(true);
   }
 
   void _incrementCounter() async {
     total = 0;
-    // _test1(_counter, "positional1");
-    // _test2(_counter, "positional2");
-    // _test3(_counter, "positional3");
-    // await _test4(_counter, "positional4");
-    // await _test5(_counter, "positional5");
+    _test1(_counter, "positional1");
+    _test2(_counter, "positional2");
+    _test3(_counter, "positional3");
+    _test4(_counter, "positional4");
+    _test5(_counter, "positional5");
     _test6(_counter, "positional6");
     _test7(_counter, "positional7");
-    // await repository.getAppVersion(packageName: "packageName");
-    // await repository.getAppVersion2(packageName: "packageName2");
-    //await Get.showNotice(message: "this is a notice");
-    //_testtry2(_counter, "positional7");
+
+    repository.getAppVersion(packageName: "packageName");
+    repository.getAppVersion2(packageName: "packageName2");
+    Get.showNotice(message: "this is a notice");
+    // _testtry2(_counter, "positional7");
     BaseControllerImpl baseControllerImpl = BaseControllerImpl();
     baseControllerImpl.baseTest();
     setState(() {
@@ -232,7 +232,7 @@ class MyHomePageState extends State<MyHomePage>
             ),
             Text(
               '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
         ),
