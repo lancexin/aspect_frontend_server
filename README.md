@@ -3,7 +3,7 @@
 编译frontend_server.dart.snapshot,让其具有aop的功能
 
 # 懒人做法,一步到位
-下载frontend_server.dart.snapshot并覆盖 ~/fvm/versions/3.24.3/bin/cache/artifacts/engine/darwin-x64frontend_server.dart.snapshot和~/fvm/versions/3.24.3/bin/cache/dart-sdk/bin/snapshots/frontend_server.dart.snapshot
+下载frontend_server.dart.snapshot并覆盖 ~/fvm/versions/3.24.3/bin/cache/dart-sdk/bin/snapshots/frontend_server.dart.snapshot
 
 
 # 编译之前
