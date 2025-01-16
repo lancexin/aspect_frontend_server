@@ -21,7 +21,10 @@ class Inject {
       Function proceed) {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
-    Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
+
+    proceed.call(positionalParams[0], positionalParams[1],
+        key3: namedParams["key3"]);
+    //Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   //普通方法拦截,带返回值
@@ -37,8 +40,11 @@ class Inject {
       target, functionName, positionalParams, namedParams, proceed) {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
-    return Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+
+    return proceed.call(positionalParams[0], positionalParams[1],
+        key3: namedParams["key3"]);
+    //return Function.apply(
+    //    proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   //普通静态方法拦截,带返回值
@@ -58,8 +64,11 @@ class Inject {
       Function proceed) {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
-    return Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+
+    return proceed.call(positionalParams[0], positionalParams[1],
+        key3: namedParams["key3"]);
+    //return Function.apply(
+    //    proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   //非类中的方法拦截
@@ -79,8 +88,11 @@ class Inject {
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
-    bool success = await Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+
+    bool success = await proceed.call(positionalParams[0], positionalParams[1],
+        key3: namedParams["key3"]);
+    //bool success = await Function.apply(
+    //    proceed, positionalParams, _transToNamedParams(namedParams));
     debugPrint("[Inject] $functionName result $success");
     return success;
   }
@@ -102,8 +114,10 @@ class Inject {
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
-    bool success = await Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+    bool success = await proceed.call(positionalParams[0], positionalParams[1],
+        key3: namedParams["key3"]);
+    //bool success = await Function.apply(
+    //    proceed, positionalParams, _transToNamedParams(namedParams));
     debugPrint("[Inject] $functionName result $success");
     return success;
   }
@@ -126,9 +140,9 @@ class Inject {
       Function proceed) {
     debugPrint(
         "[Inject] $functionName start ${namedParams["title"]} ${namedParams["message"]}");
-
-    return Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+    return proceed.call(positionalParams[0], message: namedParams["message"]);
+    //return Function.apply(
+    //   proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   // //全局catch拦截
@@ -157,7 +171,7 @@ class Inject {
   })
   //必须是static,不然不起作用
   //这里需要注意Extension的注入和普通方法不同,methodName的写法也与普遍的不同
-  //Extension中的方法第一个positionalParams[0]所代表的参数是它扩展的实例本身
+  //Extension中的方法第一个positionalParams[0]所代表的参数是它扩展的实例本身,后面的才是参数
   static Future<bool> _injectTest5(
       Object target,
       String functionName,
@@ -166,8 +180,12 @@ class Inject {
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0].runtimeType.toString()} ${positionalParams[1]} ${positionalParams[2]} ${namedParams["key3"]}");
-    bool success = await Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+
+    bool success = await proceed.call(
+        positionalParams[0], positionalParams[1], positionalParams[2],
+        key3: namedParams["key3"]);
+    // bool success = await Function.apply(
+    //     proceed, positionalParams, _transToNamedParams(namedParams));
     debugPrint("[Inject] $functionName result $success");
     return success;
   }
@@ -187,9 +205,12 @@ class Inject {
       Map<dynamic, dynamic> namedParams,
       Function proceed) {
     PointerEvent event = positionalParams[0];
+    HitTestResult? hitTestResult = positionalParams[1];
     //debugPrint('dispatchEvent - start ${event.kind.name}');
-    return Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+
+    return proceed.call(event, hitTestResult);
+    // return Function.apply(
+    //     proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   //Mixin里方法拦截的例子
@@ -209,7 +230,9 @@ class Inject {
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
-    Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
+    proceed.call(positionalParams[0], positionalParams[1],
+        key3: namedParams["key3"]);
+    //Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   @pragma('vm:entry-point')
@@ -228,7 +251,9 @@ class Inject {
       Function proceed) async {
     debugPrint(
         "[Inject] $functionName start ${positionalParams[0]} ${positionalParams[1]} ${namedParams["key3"]}");
-    Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
+    proceed.call(positionalParams[0], positionalParams[1],
+        key3: namedParams["key3"]);
+    //Function.apply(proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   @pragma('vm:entry-point')
@@ -246,8 +271,11 @@ class Inject {
       Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint("[Inject] $functionName start: ${namedParams["packageName"]}");
-    int result = await Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+
+    int result = await proceed.call(packageName: namedParams["packageName"]);
+
+    //int result = await Function.apply(
+    //    proceed, positionalParams, _transToNamedParams(namedParams));
     debugPrint("[Inject] $functionName result: $result");
     return result;
   }
@@ -267,8 +295,10 @@ class Inject {
       Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint("[Inject] $functionName start: ${namedParams["packageName"]}");
-    int result = await Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+
+    int result = await proceed.call(packageName: namedParams["packageName"]);
+    //int result = await Function.apply(
+    //    proceed, positionalParams, _transToNamedParams(namedParams));
     debugPrint("[Inject] $functionName result: $result");
     return result;
   }
@@ -289,8 +319,10 @@ class Inject {
       Function proceed) async {
     debugPrint(
         "[Inject] _injectGetAppVersion22 start: ${namedParams["packageName"]}");
-    int result = await Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+
+    int result = await proceed.call(packageName: namedParams["packageName"]);
+    //int result = await Function.apply(
+    //    proceed, positionalParams, _transToNamedParams(namedParams));
     debugPrint("[Inject] _injectGetAppVersion22 result: $result");
     return result;
   }
@@ -310,9 +342,10 @@ class Inject {
       Map<dynamic, dynamic> namedParams,
       Function proceed) async {
     debugPrint("[Inject] testMixin start");
+    return proceed.call();
 
-    return Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
+    //return Function.apply(
+    //   proceed, positionalParams, _transToNamedParams(namedParams));
   }
 
   @pragma('vm:entry-point')
@@ -331,18 +364,8 @@ class Inject {
       Function proceed) async {
     debugPrint(
         "[Inject] baseTest start: ${target.runtimeType.toString()} $functionName ");
-
-    return Function.apply(
-        proceed, positionalParams, _transToNamedParams(namedParams));
-  }
-
-  @pragma('vm:entry-point')
-  static Map<Symbol, dynamic> _transToNamedParams(
-      Map<dynamic, dynamic> namedParams) {
-    Map<Symbol, dynamic> maps = {};
-    namedParams.forEach((key, value) {
-      maps[Symbol(key)] = value;
-    });
-    return maps;
+    return proceed.call();
+    //return Function.apply(
+    //    proceed, positionalParams, _transToNamedParams(namedParams));
   }
 }

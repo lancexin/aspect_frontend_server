@@ -4,14 +4,14 @@ packages:
   _fe_analyzer_shared:
     dependency: "direct main"
     description:
-      path: "../dart_sdk/sdk/pkg/_fe_analyzer_shared"
+      path: "../dart_sdk/sdk1/pkg/_fe_analyzer_shared"
       relative: true
     source: path
     version: "72.0.0"
   _js_interop_checks:
     dependency: "direct overridden"
     description:
-      path: "../dart_sdk/sdk/pkg/_js_interop_checks"
+      path: "../dart_sdk/sdk1/pkg/_js_interop_checks"
       relative: true
     source: path
     version: "0.0.0"
@@ -47,7 +47,7 @@ packages:
   async_helper:
     dependency: "direct dev"
     description:
-      path: "../dart_sdk/sdk/pkg/async_helper"
+      path: "../dart_sdk/sdk1/pkg/async_helper"
       relative: true
     source: path
     version: "0.0.0"
@@ -70,7 +70,7 @@ packages:
   build_integration:
     dependency: "direct dev"
     description:
-      path: "../dart_sdk/sdk/pkg/build_integration"
+      path: "../dart_sdk/sdk1/pkg/build_integration"
       relative: true
     source: path
     version: "0.0.0"
@@ -85,7 +85,7 @@ packages:
   compiler:
     dependency: "direct dev"
     description:
-      path: "../dart_sdk/sdk/pkg/compiler"
+      path: "../dart_sdk/sdk1/pkg/compiler"
       relative: true
     source: path
     version: "0.0.0"
@@ -116,14 +116,14 @@ packages:
   dart2js_info:
     dependency: "direct overridden"
     description:
-      path: "../dart_sdk/sdk/pkg/dart2js_info"
+      path: "../dart_sdk/sdk1/pkg/dart2js_info"
       relative: true
     source: path
     version: "0.0.0"
   dart2wasm:
     dependency: "direct dev"
     description:
-      path: "../dart_sdk/sdk/pkg/dart2wasm"
+      path: "../dart_sdk/sdk1/pkg/dart2wasm"
       relative: true
     source: path
     version: "0.0.0"
@@ -138,14 +138,14 @@ packages:
   dev_compiler:
     dependency: "direct dev"
     description:
-      path: "../dart_sdk/sdk/pkg/dev_compiler"
+      path: "../dart_sdk/sdk1/pkg/dev_compiler"
       relative: true
     source: path
     version: "0.0.0"
   expect:
     dependency: "direct dev"
     description:
-      path: "../dart_sdk/sdk/pkg/expect"
+      path: "../dart_sdk/sdk1/pkg/expect"
       relative: true
     source: path
     version: "0.0.0"
@@ -176,14 +176,14 @@ packages:
   front_end:
     dependency: "direct overridden"
     description:
-      path: "../dart_sdk/sdk/pkg/front_end"
+      path: "../dart_sdk/sdk1/pkg/front_end"
       relative: true
     source: path
     version: "0.0.0"
   frontend_server:
     dependency: "direct main"
     description:
-      path: "../dart_sdk/sdk/pkg/frontend_server"
+      path: "../dart_sdk/sdk1/pkg/frontend_server"
       relative: true
     source: path
     version: "0.0.0"
@@ -238,21 +238,21 @@ packages:
   js_ast:
     dependency: "direct overridden"
     description:
-      path: "../dart_sdk/sdk/pkg/js_ast"
+      path: "../dart_sdk/sdk1/pkg/js_ast"
       relative: true
     source: path
     version: "0.0.0"
   js_runtime:
     dependency: "direct overridden"
     description:
-      path: "../dart_sdk/sdk/pkg/js_runtime"
+      path: "../dart_sdk/sdk1/pkg/js_runtime"
       relative: true
     source: path
     version: "0.0.0"
   js_shared:
     dependency: "direct overridden"
     description:
-      path: "../dart_sdk/sdk/pkg/js_shared"
+      path: "../dart_sdk/sdk1/pkg/js_shared"
       relative: true
     source: path
     version: "0.0.0"
@@ -267,7 +267,7 @@ packages:
   kernel:
     dependency: "direct main"
     description:
-      path: "../dart_sdk/sdk/pkg/kernel"
+      path: "../dart_sdk/sdk1/pkg/kernel"
       relative: true
     source: path
     version: "0.0.0"
@@ -282,7 +282,7 @@ packages:
   macros:
     dependency: "direct main"
     description:
-      path: "../dart_sdk/sdk/pkg/macros"
+      path: "../dart_sdk/sdk1/pkg/macros"
       relative: true
     source: path
     version: "0.1.2-main.4"
@@ -313,7 +313,7 @@ packages:
   mmap:
     dependency: "direct overridden"
     description:
-      path: "../dart_sdk/sdk/pkg/mmap"
+      path: "../dart_sdk/sdk1/pkg/mmap"
       relative: true
     source: path
     version: "0.0.0"
@@ -400,7 +400,7 @@ packages:
   smith:
     dependency: "direct overridden"
     description:
-      path: "../dart_sdk/sdk/pkg/smith"
+      path: "../dart_sdk/sdk1/pkg/smith"
       relative: true
     source: path
     version: "0.0.0"
@@ -495,7 +495,7 @@ packages:
   testing:
     dependency: "direct dev"
     description:
-      path: "../dart_sdk/sdk/pkg/testing"
+      path: "../dart_sdk/sdk1/pkg/testing"
       relative: true
     source: path
     version: "0.0.0"
@@ -510,7 +510,7 @@ packages:
   vm:
     dependency: "direct main"
     description:
-      path: "../dart_sdk/sdk/pkg/vm"
+      path: "../dart_sdk/sdk1/pkg/vm"
       relative: true
     source: path
     version: "0.0.0"
@@ -533,7 +533,7 @@ packages:
   wasm_builder:
     dependency: "direct overridden"
     description:
-      path: "../dart_sdk/sdk/pkg/wasm_builder"
+      path: "../dart_sdk/sdk1/pkg/wasm_builder"
       relative: true
     source: path
     version: "0.0.0"

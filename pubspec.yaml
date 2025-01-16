@@ -35,44 +35,44 @@ dev_dependencies:
 
 dependency_overrides:
   _fe_analyzer_shared:
-    path: ../dart_sdk/sdk/pkg/_fe_analyzer_shared
+    path: ../dart_sdk/sdk1/pkg/_fe_analyzer_shared
   _js_interop_checks:
-    path: ../dart_sdk/sdk/pkg/_js_interop_checks
+    path: ../dart_sdk/sdk1/pkg/_js_interop_checks
   async_helper:
-    path: ../dart_sdk/sdk/pkg/async_helper
+    path: ../dart_sdk/sdk1/pkg/async_helper
   build_integration:
-    path: ../dart_sdk/sdk/pkg/build_integration
+    path: ../dart_sdk/sdk1/pkg/build_integration
   compiler:
-    path: ../dart_sdk/sdk/pkg/compiler
+    path: ../dart_sdk/sdk1/pkg/compiler
   dart2js_info:
-    path: ../dart_sdk/sdk/pkg/dart2js_info
+    path: ../dart_sdk/sdk1/pkg/dart2js_info
   dart2wasm:
-    path: ../dart_sdk/sdk/pkg/dart2wasm
+    path: ../dart_sdk/sdk1/pkg/dart2wasm
   dev_compiler:
-    path: ../dart_sdk/sdk/pkg/dev_compiler
+    path: ../dart_sdk/sdk1/pkg/dev_compiler
   expect:
-    path: ../dart_sdk/sdk/pkg/expect
+    path: ../dart_sdk/sdk1/pkg/expect
   js_ast:
-    path: ../dart_sdk/sdk/pkg/js_ast
+    path: ../dart_sdk/sdk1/pkg/js_ast
   js_runtime:
-    path: ../dart_sdk/sdk/pkg/js_runtime
+    path: ../dart_sdk/sdk1/pkg/js_runtime
   js_shared:
-    path: ../dart_sdk/sdk/pkg/js_shared
+    path: ../dart_sdk/sdk1/pkg/js_shared
   kernel:
-    path: ../dart_sdk/sdk/pkg/kernel
+    path: ../dart_sdk/sdk1/pkg/kernel
   mmap:
-    path: ../dart_sdk/sdk/pkg/mmap
+    path: ../dart_sdk/sdk1/pkg/mmap
   smith:
-    path: ../dart_sdk/sdk/pkg/smith
+    path: ../dart_sdk/sdk1/pkg/smith
   testing:
-    path: ../dart_sdk/sdk/pkg/testing
+    path: ../dart_sdk/sdk1/pkg/testing
   vm:
-    path: ../dart_sdk/sdk/pkg/vm
+    path: ../dart_sdk/sdk1/pkg/vm
   wasm_builder:
-    path: ../dart_sdk/sdk/pkg/wasm_builder
+    path: ../dart_sdk/sdk1/pkg/wasm_builder
   frontend_server:
-    path: ../dart_sdk/sdk/pkg/frontend_server
+    path: ../dart_sdk/sdk1/pkg/frontend_server
   front_end: 
-    path: ../dart_sdk/sdk/pkg/front_end
+    path: ../dart_sdk/sdk1/pkg/front_end
   macros: 
-    path: ../dart_sdk/sdk/pkg/macros
+    path: ../dart_sdk/sdk1/pkg/macros

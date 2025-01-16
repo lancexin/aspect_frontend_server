@@ -14,6 +14,7 @@ class MethodItem {
   final bool isStatic;
   final bool isRegex;
   final Member aopMember;
+  final bool isGetter;
 
   MethodItem(
       {required this.importUri,
@@ -21,11 +22,12 @@ class MethodItem {
       required this.methodName,
       required this.isStatic,
       required this.aopMember,
+      required this.isGetter,
       required this.isRegex});
 
   @override
   String toString() {
-    return 'AopItem{importUri: $importUri, clsName: $clsName, methodName: $methodName, isStatic: $isStatic, isRegex: $isRegex, aopMember: $aopMember';
+    return 'AopItem{importUri: $importUri, clsName: $clsName, methodName: $methodName, isStatic: $isStatic, isGetter: $isGetter, isRegex: $isRegex, aopMember: $aopMember';
   }
 }
 
@@ -104,14 +106,17 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
           List<ConstantMapEntry> list =
               (instanceConstant.fieldValues.values.last as MapConstant).entries;
 
-          if (list.length != 4) {
-            continue;
-          }
-
-          if (!(list[0].value is StringConstant &&
-              list[1].value is StringConstant &&
-              list[2].value is StringConstant &&
-              list[3].value is BoolConstant)) {
+          if (!(list.length == 4 &&
+                  list[0].value is StringConstant &&
+                  list[1].value is StringConstant &&
+                  list[2].value is StringConstant &&
+                  list[3].value is BoolConstant) &&
+              !(list.length == 5 &&
+                  list[0].value is StringConstant &&
+                  list[1].value is StringConstant &&
+                  list[2].value is StringConstant &&
+                  list[3].value is BoolConstant &&
+                  list[4].value is BoolConstant)) {
             continue;
           }
 
@@ -119,6 +124,9 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
           String clsName = (list[1].value as StringConstant).value;
           String methodName = (list[2].value as StringConstant).value;
           bool isRegex = (list[3].value as BoolConstant).value;
+          bool isGetter = list.length == 5
+              ? (list[4].value as BoolConstant?)?.value ?? false
+              : false;
           bool isStatic = false;
           if (methodName
               .startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
@@ -138,6 +146,7 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
               methodName: methodName,
               isStatic: isStatic,
               aopMember: member,
+              isGetter: isGetter,
               isRegex: isRegex);
         }
       } else if (annotation is ConstructorInvocation) {
@@ -176,6 +185,10 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
             invocation1.entries[3].value as BoolLiteral;
         isRegex = boolLiteral.value;
 
+        bool isGetter = invocation1.entries == 5
+            ? (invocation1.entries[4].value as BoolLiteral?)?.value ?? false
+            : false;
+
         bool isStatic = false;
         if (methodName
             .startsWith(AopUtils.kAopAnnotationInstanceMethodPrefix)) {
@@ -193,6 +206,7 @@ class MethodAopTransformer implements frontend.ProgramTransformer {
             methodName: methodName,
             isStatic: isStatic,
             aopMember: member,
+            isGetter: isGetter,
             isRegex: isRegex);
       }
     }
@@ -253,16 +267,19 @@ class _MethodExecuteVisitor extends RecursiveVisitor {
     int aopItemInfoListLen = _aopItemList.length;
     for (int i = 0; i < aopItemInfoListLen && !matches; i++) {
       MethodItem aopItem = _aopItemList[i];
-      if ((aopItem.isRegex && RegExp(aopItem.clsName).hasMatch(clsName)) ||
-          (!aopItem.isRegex && clsName == aopItem.clsName) &&
-              originalLibrary.importUri.toString() == aopItem.importUri) {
+      bool classMatched =
+          (aopItem.isRegex && RegExp(aopItem.clsName).hasMatch(clsName)) ||
+              (!aopItem.isRegex && clsName == aopItem.clsName);
+      bool libraryMatched =
+          originalLibrary.importUri.toString() == aopItem.importUri;
+      if (classMatched && libraryMatched) {
         matches = true;
         break;
       }
     }
     if (matches) {
       stdout.writeln(
-          "[MethodAopTransformer] visitExtension extension match ${node.parent.runtimeType.toString()} ${node.name}");
+          "[MethodAopTransformer] visitExtension extension match ${node.parent.runtimeType.toString()} ${node.name} ${originalLibrary}");
       node.visitChildren(this);
     }
   }
@@ -272,18 +289,16 @@ class _MethodExecuteVisitor extends RecursiveVisitor {
     String procedureName = node.name.text;
     bool needCompareClass = false;
     Class? originalClass = null;
-    Library? originalLibrary = null;
+    Library originalLibrary = node.enclosingLibrary;
     if (node.parent is Class) {
       needCompareClass = true;
       originalClass = node.parent as Class;
-      originalLibrary = node.enclosingLibrary;
     }
 
     String? clsName = null;
-    String? importUri = null;
+    String importUri = originalLibrary.importUri.toString();
     if (needCompareClass) {
       clsName = originalClass?.name;
-      importUri = originalLibrary?.importUri.toString();
     }
 
     if (needCompareClass &&
@@ -304,15 +319,19 @@ class _MethodExecuteVisitor extends RecursiveVisitor {
     int aopItemInfoListLen = _aopItemList.length;
     for (int i = 0; i < aopItemInfoListLen && matchedAopItem == null; i++) {
       MethodItem aopItem = _aopItemList[i];
-      if ((aopItem.isRegex &&
+
+      bool methodMatched = (aopItem.isRegex &&
               RegExp(aopItem.methodName).hasMatch(procedureName)) ||
-          (!aopItem.isRegex && procedureName == aopItem.methodName)) {
+          (!aopItem.isRegex && procedureName == aopItem.methodName);
+      bool libraryMatched = aopItem.importUri == importUri;
+      bool getterMatched = aopItem.isGetter == node.isGetter;
+      if (libraryMatched && methodMatched && getterMatched) {
         if (needCompareClass) {
-          if (((aopItem.isRegex &&
-                      clsName != null &&
-                      RegExp(aopItem.clsName).hasMatch(clsName)) ||
-                  (!aopItem.isRegex && aopItem.clsName == clsName)) &&
-              aopItem.importUri == importUri) {
+          bool classMatched = (aopItem.isRegex &&
+                  clsName != null &&
+                  RegExp(aopItem.clsName).hasMatch(clsName)) ||
+              (!aopItem.isRegex && aopItem.clsName == clsName);
+          if (classMatched) {
             matchedAopItem = aopItem;
             break;
           }
@@ -320,6 +339,9 @@ class _MethodExecuteVisitor extends RecursiveVisitor {
           matchedAopItem = aopItem;
           break;
         }
+      } else {
+        //stdout.writeln(
+        //    "[MethodAopTransformer] visitProcedure $procedureName not match ${importUri}");
       }
     }
     if (matchedAopItem == null) {
@@ -404,6 +426,38 @@ class _MethodExecuteVisitor extends RecursiveVisitor {
     }
   }
 
+  bool isInjectBlock3(ReturnStatement? block, Procedure injectProcedure,
+      Procedure originProcedure) {
+    if (block == null) {
+      return false;
+    }
+
+    Expression? expression = block.expression;
+
+    if (expression is StaticInvocation) {
+      if (expression.arguments.positional.length != 5) {
+        stdout.writeln(
+            "[MethodAopTransformer] arguments is not 5 so return ${expression.arguments.positional.length}");
+        return false;
+      }
+      if (expression.arguments.positional[1] is StringLiteral &&
+          expression.arguments.positional[2] is ListLiteral &&
+          expression.arguments.positional[3] is MapLiteral &&
+          expression.arguments.positional[4] is FunctionExpression) {
+        if ((expression.arguments.positional[1] as StringLiteral).value ==
+            originProcedure.name.text) {
+          return true;
+        }
+        return false;
+      }
+      return false;
+    } else {
+      stdout.writeln(
+          "[MethodAopTransformer] expression is not StaticInvocation so return ");
+      return false;
+    }
+  }
+
   // Block? getInjectBlock(Block? block, Procedure originalProcedure) {
   //   if (block == null) {
   //     return block;
@@ -459,10 +513,16 @@ class _MethodExecuteVisitor extends RecursiveVisitor {
     final FunctionNode functionNode = originalProcedure.function;
 
     //当前方法的处理逻辑
-    Block? bodyStatements = functionNode.body as Block?;
+    Block? bodyStatements;
+
+    if (functionNode.body is Block) {
+      bodyStatements = functionNode.body as Block;
+    } else if (functionNode.body is ReturnStatement) {
+      bodyStatements = Block([functionNode.body!]);
+    }
     if (bodyStatements == null) {
       stdout.writeln(
-          "[MethodAopTransformer] bodyStatements ${originalProcedure.name.toString()} is null so return");
+          "[MethodAopTransformer] bodyStatements ${originalProcedure.name.toString()} is ${functionNode.body.runtimeType.toString()} so return");
       return;
     }
     //bodyStatements = getInjectBlock(bodyStatements, originalProcedure);
@@ -541,6 +601,6 @@ class _MethodExecuteVisitor extends RecursiveVisitor {
     //将原本的处理流程替换成注入后的流程
     functionNode.body = block;
     print(
-        "[AspectAopTransformer] inject ${originalProcedure.name.toString()} success ");
+        "[AspectAopTransformer] inject ${originalProcedure.name.toString()}${originalProcedure.isGetter ? ":get" : ""}  success ");
   }
 }

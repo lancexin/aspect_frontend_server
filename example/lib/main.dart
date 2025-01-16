@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 //必须有,不然不起作用
 // ignore: unused_import
+//import 'inject2.dart';
 import 'inject.dart';
 
 void main() {
@@ -59,6 +60,11 @@ Future<bool> _test4(int key1, String key2, {String key3 = 'namedkey4'}) async {
   debugPrint("$total _test4 $key1 $key2 $key3");
   return true;
 }
+
+int _intTest = 11;
+
+int get getIntTest => _intTest;
+set getIntTest(int i) => _intTest = i;
 
 Future<bool> _testtry(int key1, String key2,
     {String key3 = 'namedkey4'}) async {
@@ -123,6 +129,11 @@ abstract class BaseRepository extends Repository with MixinUpgrade {
     debugPrint("getAppVersion2 $packageName");
     return 0;
   }
+
+  int _p1 = 0;
+
+  int get p1 => _p1 + 7;
+  set p1(int i) => _p1 = i;
 }
 
 mixin MixinUpgrade on Repository {
@@ -179,10 +190,19 @@ class _MyHomePageState extends State<MyHomePage>
 
     repository.getAppVersion(packageName: "packageName");
     repository.getAppVersion2(packageName: "packageName2");
+    repository.p1 = 1;
+    debugPrint("p1 is ${repository.p1}");
+    repository.p1 = 2;
+    debugPrint("again p1 is ${repository.p1}");
+
     Get.showNotice(message: "this is a notice");
     // _testtry2(_counter, "positional7");
     BaseControllerImpl baseControllerImpl = BaseControllerImpl();
     baseControllerImpl.baseTest();
+    getIntTest = 11;
+    debugPrint(getIntTest.toString());
+    getIntTest = 12;
+    debugPrint(getIntTest.toString());
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
