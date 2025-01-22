@@ -1,5 +1,6 @@
 import 'package:example/test_mixin.dart';
 import 'package:flutter/material.dart';
+import 'dart:core';
 
 //必须有,不然不起作用
 // ignore: unused_import
@@ -122,6 +123,29 @@ mixin MixinHomePageState2<T extends StatefulWidget> on State<T> {
   }
 }
 
+T _test8<T>(T t) {
+  print("_test8 t.type is ${t.runtimeType}");
+  return t;
+}
+
+Future<T> _test9<T>(T t) async {
+  print("_test9 t.type is ${t.runtimeType}");
+  return t;
+}
+
+class G<T> {
+  T t;
+
+  G(this.t);
+  T getT() {
+    return t;
+  }
+
+  void setT(T t) {
+    this.t = t;
+  }
+}
+
 abstract class Repository {}
 
 abstract class BaseRepository extends Repository with MixinUpgrade {
@@ -187,6 +211,30 @@ class _MyHomePageState extends State<MyHomePage>
     _test5(_counter, "positional5");
     _test6(_counter, "positional6");
     _test7(_counter, "positional7");
+
+    _test8(1);
+    _test8(1.1);
+    _test8("aaa");
+
+    var t1 = await _test9(1);
+    var t2 = await _test9("aaa");
+
+    var f = Future(() {
+      return 1;
+    });
+
+    var t3 = await _test9(f);
+    print("${t1} t1.type ${t1.runtimeType}");
+    print("${t2} t2.type ${t2.runtimeType}");
+    print("${t3} t3.type ${t3.runtimeType}");
+
+    var g = G(1);
+    var t4 = g.getT();
+    print("${t4} t4.type ${t4.runtimeType}");
+
+    var g2 = G("aaa");
+    var t5 = g2.getT();
+    print("${t5} t5.type ${t5.runtimeType}");
 
     repository.getAppVersion(packageName: "packageName");
     repository.getAppVersion2(packageName: "packageName2");

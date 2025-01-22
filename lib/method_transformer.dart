@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:frontend_server/frontend_server.dart' as frontend;
 
 import 'package:kernel/ast.dart';
+import 'package:kernel/core_types.dart';
 import 'utils.dart';
 
 class MethodItem {
@@ -573,10 +574,29 @@ class _MethodExecuteVisitor extends RecursiveVisitor {
     final List<MapLiteralEntry> entries = <MapLiteralEntry>[];
     for (NamedExpression namedExpression in originArguments.named) {
       //这里用SymbolLiteral貌似无效,退而求其次用StringLiteral
+
       entries.add(MapLiteralEntry(
           StringLiteral(namedExpression.name), namedExpression.value));
     }
     redirectArguments.positional.add(MapLiteral(entries));
+
+    //如果返回类型是 Future 或者FutureOrType,强制转换成 dynamic
+    if (shouldReturn && functionNode.returnType is FutureOrType ||
+        (functionNode.returnType is InterfaceType &&
+            (functionNode.returnType as InterfaceType)
+                    .classNode
+                    .enclosingLibrary
+                    .importUri
+                    .toString() ==
+                'dart:async' &&
+            (functionNode.returnType as InterfaceType).classNode.name ==
+                'Future')) {
+      stdout.writeln(
+          "${originalProcedure.name.toString()} return type is FutureOrType ${functionNode.returnType.toStringInternal()}");
+      //这里还有第二种做法，强制返回 Future<dynamic>
+      functionNode.returnType = DynamicType();
+      functionNode.emittedValueType = DynamicType();
+    }
     //proceed
     final FunctionNode newFunctionNode = FunctionNode(bodyStatements,
         typeParameters: AopUtils.deepCopyASTNodes<TypeParameter>(

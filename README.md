@@ -27,7 +27,7 @@ dart compile kernel --output=dump_kernel.dart.snapshot bin/dump_kernel.dart
 # 测试编译
 1. 生成kernel_snapshot.d,先用普通方法run一下example,在example/.dart_tool/flutter_build下面会有生成编译临时的文件
 
-2. 执行下面命令测试(注意目录替换)):
+2. 执行下面命令测试(注意目录替换):
 
 
 ## 编译aot dill
