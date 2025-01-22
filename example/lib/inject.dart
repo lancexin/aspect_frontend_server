@@ -259,6 +259,89 @@ class Inject {
   @pragma('vm:entry-point')
   @pragma("aopd:inject", {
     "importUri": "package:example/main.dart",
+    "clsName": "",
+    "methodName": "+_test8",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static dynamic _injectTest8(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<dynamic, dynamic> namedParams,
+      Function proceed) async {
+    debugPrint("[Inject] $functionName start ${positionalParams[0]}");
+    return proceed.call(positionalParams[0]);
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
+    "clsName": "",
+    "methodName": "+_test9",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static dynamic _injectTest9(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<dynamic, dynamic> namedParams,
+      Function proceed) async {
+    debugPrint(
+        "[Inject] $functionName start ${positionalParams[0]},p0.type:${positionalParams[0].runtimeType},func.type;${proceed.runtimeType}");
+
+    var r = proceed.call(positionalParams[0]);
+    debugPrint("[Inject] $functionName end ${await r},r.type:${r.runtimeType}");
+    return r;
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
+    "clsName": "G",
+    "methodName": "-getT",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static dynamic _injectGgetT(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<dynamic, dynamic> namedParams,
+      Function proceed) {
+    debugPrint("[Inject] $functionName start func.type;${proceed.runtimeType}");
+
+    var r = proceed.call();
+    debugPrint("[Inject] $functionName end ${r},r.type:${r.runtimeType}");
+    return r;
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
+    "clsName": "G",
+    "methodName": "-setT",
+    "isRegex": false
+  })
+  //必须是static,不然不起作用
+  static dynamic _injectGsetT(
+      Object target,
+      String functionName,
+      List<dynamic> positionalParams,
+      Map<dynamic, dynamic> namedParams,
+      Function proceed) {
+    debugPrint(
+        "[Inject] $functionName start ${positionalParams[0]},p0.type:${positionalParams[0].runtimeType},func.type;${proceed.runtimeType}");
+
+    var r = proceed.call(positionalParams[0]);
+    debugPrint("[Inject] $functionName end ${r},r.type:${r.runtimeType}");
+    return r;
+  }
+
+  @pragma('vm:entry-point')
+  @pragma("aopd:inject", {
+    "importUri": "package:example/main.dart",
     "clsName": "RepositoryImpl",
     "methodName": "-getAppVersion",
     "isRegex": false
