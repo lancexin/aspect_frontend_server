@@ -3,7 +3,7 @@
 编译frontend_server.dart.snapshot,让其具有aop的功能
 
 # 懒人做法,一步到位
-下载frontend_server.dart.snapshot并覆盖 ~/fvm/versions/3.24.3/bin/cache/dart-sdk/bin/snapshots/frontend_server.dart.snapshot
+下载frontend_server.dart.snapshot并覆盖 ~/fvm/versions/3.38.1/bin/cache/dart-sdk/bin/snapshots/frontend_server.dart.snapshot
 
 
 # 编译之前
@@ -31,31 +31,27 @@ dart compile kernel --output=dump_kernel.dart.snapshot bin/dump_kernel.dart
 
 
 ## 编译aot dill
-.fvm/flutter_sdk/bin/cache/dart-sdk/bin/dartaotruntime frontend_server_aot.dart_macos.snapshot --sdk-root ~/fvm/versions/3.24.3/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --target=flutter --aot --tfa --no-print-incremental-dependencies -Dflutter.inspector.structuredErrors=true -DFLUTTER_WEB_AUTO_DETECT=true -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --packages example/.dart_tool/package_config.json --output-dill app.aot --depfile example/.dart_tool/flutter_build/31a7f421330fdca23d68f3c09767c0a5/kernel_snapshot.d package:example/main.dart
+~/Documents/flutter_3.38.0/bin/cache/dart-sdk/bin/dartaotruntime frontend_server_aot_macos.dart.snapshot --sdk-root ~/Documents/flutter_3.38.0/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --target=flutter --aot --tfa --no-print-incremental-dependencies -Dflutter.inspector.structuredErrors=true -DFLUTTER_WEB_AUTO_DETECT=true -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --packages example/.dart_tool/package_config.json --output-dill app.aot --depfile example/.dart_tool/flutter_build/e550b507bc4641bbba416320fac7ab84/kernel_snapshot.d package:example/main.dart
 
 注意：31a7f421330fdca23d68f3c09767c0a5 这个需要修改成你目录下面的缓存路径
 
 ## 编译运行时dill
-.fvm/flutter_sdk/bin/cache/dart-sdk/bin/dartaotruntime  frontend_server_aot.dart_macos.snapshot --sdk-root ~/fvm/versions/3.24.3/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --target=flutter --no-print-incremental-dependencies -Dflutter.inspector.structuredErrors=true -DFLUTTER_WEB_AUTO_DETECT=true -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --packages example/.dart_tool/package_config.json --output-dill app.dill --depfile example/.dart_tool/flutter_build/31a7f421330fdca23d68f3c09767c0a5/kernel_snapshot.d package:example/main.dart
-
-注意：31a7f421330fdca23d68f3c09767c0a5 这个需要修改成你目录下面的缓存路径
+~/Documents/flutter_3.38.0/bin/cache/dart-sdk/bin/dartaotruntime frontend_server_aot_macos.dart.snapshot --sdk-root ~/Documents/flutter_3.38.0/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --target=flutter --no-print-incremental-dependencies -Dflutter.inspector.structuredErrors=true -DFLUTTER_WEB_AUTO_DETECT=true -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --packages example/.dart_tool/package_config.json --output-dill app.dill --depfile example/.dart_tool/flutter_build/e550b507bc4641bbba416320fac7ab84/kernel_snapshot.d package:example/main.dart
 
 
-
-.fvm/flutter_sdk/bin/cache/dart-sdk/bin/dartaotruntime  frontend_server_aot.dart_macos.snapshot --sdk-root /Users/lixin/fvm/versions/3.24.3/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --target=flutter --no-print-incremental-dependencies -Ddart.vm.profile=true -Ddart.vm.product=false --delete-tostring-package-uri=dart:ui --delete-tostring-package-uri=package:flutter --track-widget-creation --aot --tfa --target-os macos --packages /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/package_config.json --output-dill program.dill --depfile /Users/lixin/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/flutter_build/6b9ed135a83e69e25931946e49bdcd50/kernel_snapshot_program.d --verbosity=error package:example/main.dart
 
 
 ## 测试aot编译成二进制
-~/fvm/versions/3.24.3/bin/cache/artifacts/engine/android-arm64-release/darwin-x64/gen_snapshot --deterministic --snapshot_kind=app-aot-elf --elf=app.so --strip app.dill
+~/Documents/flutter_3.38.0/bin/cache/artifacts/engine/android-arm64-release/darwin-x64/gen_snapshot --deterministic --snapshot_kind=app-aot-elf --elf=app.so --strip app.dill
 
 ## dill 文件注入成功检测
 dart run dump_kernel.dart.snapshot app.dill injected.out.dill.txt
 
 
-dart run dump_kernel.dart.snapshot  /Users/yourname/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/flutter_build/31a7f421330fdca23d68f3c09767c0a5/app.dill injected.out.dill.txt
+dart run dump_kernel.dart.snapshot  ~/Documents/FlutterWorkspace/aspect_frontend_server/example/.dart_tool/flutter_build/31a7f421330fdca23d68f3c09767c0a5/app.dill injected.out.dill.txt
 
 ## 测试生成汇编上下文
-.fvm/versions/3.24.3/bin/cache/artifacts/engine/darwin-x64-release/gen_snapshot_x64 --deterministic --snapshot_kind=app-aot-assembly --assembly=/Users/yourname/Documents/FlutterWorkspace/aspect_frontend_server/snapshot_assembly.S /Users/yourname/Documents/FlutterWorkspace/aspect_frontend_server/app.dill
+~/Documents/flutter_3.38.0/bin/cache/artifacts/engine/darwin-x64-release/gen_snapshot_x64 --deterministic --snapshot_kind=app-aot-assembly --assembly=snapshot_assembly.S app.dill
 
 
 
@@ -68,7 +64,7 @@ dart run dump_kernel.dart.snapshot  /Users/yourname/Documents/FlutterWorkspace/a
 cd example && flutter clean && flutter pub get && flutter run
 
 ### 该方法和aspectd的区别
-1. aspectd不支持flutter 2.5.4以上,本项目最高支持到2.23.3,再高没有测过
+1. aspectd不支持flutter 2.5.4以上,本项目最高支持到2.38.1,再高没有测过
 2. aspectd使用前需要对flutter tools的代码进行修改,本项目只需要替换flutter sdk对应的frontend_server.dart.snapshot即可
 3. aspectd的实现原理过于复杂,本项目去掉了Call,Inject等用法保留了Execute用法的同时对注入逻辑进行了简化
 4. aspectd还需要aspect_impl等,本项目可以直接在主程序代码中添加注入代码,也可以用plugin的方式添加

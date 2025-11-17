@@ -11,7 +11,7 @@ Future<void> main(List<String> args) async {
     ArgResults options = frontend.argParser.parse(args);
     stdout.writeln(
         "!!!!! this is aspect_frontend_server !!!!!! args is:\n ${args}");
-    frontend.FrontendCompiler compiler = FrontendCompilerProxy(
+    final compiler = FrontendCompilerProxy(
       stdout,
       transformer: AspectAopTransformer(),
       unsafePackageSerialization: options["unsafe-package-serialization"],
